@@ -23,14 +23,14 @@ class LikeCreado implements ShouldBroadcast
 
         // 👇 CAMBIAR TODO ESTO
         // Determinar el receptor según el tipo de target
-        if ($like->target_tipo === 'publicacion') {
-            $publicacion = $like->publicacion;
-            $this->receptorId = $publicacion->institucion->user->id;
+        if ($like->target_tipo === 'noticia') {
+            $noticia = $like->noticia;
+            $this->receptorId = $noticia->institucion->user->id;
             
             $usuarioQueHizoLike = $like->persona->user ?? $like->institucion->user;
             
             if ($usuarioQueHizoLike && $usuarioQueHizoLike->id !== $this->receptorId) {
-                $publicacion->institucion->user->notify(new LikeCreadoNotification($like));
+                $noticia->institucion->user->notify(new LikeCreadoNotification($like));
             }
             
         } elseif ($like->target_tipo === 'comentario') {
@@ -79,7 +79,7 @@ class LikeCreado implements ShouldBroadcast
             'type' => 'App\Notifications\LikeCreadoNotification',
             'like' => [
                 'id' => $this->like->id,
-                'publicacion_id' => $this->like->target_id,
+                'noticia_id' => $this->like->target_id,
                 'target_tipo' => $this->like->target_tipo, // 👈 AGREGAR ESTO
                 'usuario' => [
                     'id'   => $usuario->id ?? null,

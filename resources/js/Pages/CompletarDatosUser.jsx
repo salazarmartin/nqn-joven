@@ -17,6 +17,8 @@ import { MAX_INTERESES_USUARIO } from "@/utils/categoriasConfig";
 export default function CompletarDatosUser() {
     const { props } = usePage();
     const { type } = props;
+    const { regiones } = props;
+    const { estudios } = props;
 
     const { validateField } = useValidation();
     const [clientErrors, setClientErrors] = useState({});
@@ -32,6 +34,8 @@ export default function CompletarDatosUser() {
         nombre: "",
         apellido: type === "persona" ? "" : undefined,
         telefono: "",
+        region_id: type === "persona" ? "" : undefined,
+        estudio_id: type === "persona" ? "" : undefined,
         ciudad: type === "institucion" ? "Neuquén Capital" : "",
         provincia: type === "institucion" ? "Neuquén" : "",
         direccion: type === "institucion" ? "" : undefined,
@@ -226,7 +230,9 @@ export default function CompletarDatosUser() {
                 "fecha_nac",
                 "interests",
                 "ciudad",
-                "provincia"
+                "provincia",
+                "region_id",
+                "estudio_id"
             );
         } else {
             fieldsToValidate.push("tipo_institucion", "direccion", {
@@ -298,7 +304,7 @@ export default function CompletarDatosUser() {
     };
 
     return (
-        <AuthenticatedLayout showRecomendaciones={false}>
+        <AuthenticatedLayout >
             <div className="mb-8 bg-white dark:bg-gray-800 text-black border border-gray-200 dark:border-edu-dark rounded-lg dark:text-gray-100 p-6 max-w-2xl mx-auto">
                 <h2 className="text-2xl font-bold mb-2 dark:text-gray-100">
                     {type === "institucion"
@@ -323,6 +329,7 @@ export default function CompletarDatosUser() {
                     {type === "institucion" ? (
                         <InstitucionFormFields
                             data={data}
+                            regiones={regiones}
                             errors={errors}
                             clientErrors={clientErrors}
                             onDataChange={handleDataChange}
@@ -335,6 +342,8 @@ export default function CompletarDatosUser() {
                         />
                     ) : (
                         <PersonaFormFields
+                            estudios={estudios}
+                            regiones={regiones}
                             data={data}
                             errors={errors}
                             clientErrors={clientErrors}

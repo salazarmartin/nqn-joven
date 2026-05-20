@@ -148,22 +148,22 @@ function InfoTab({ institucion, auth, guardada, toggleUbicacion }) {
     );
 }
 
-// Componente para mostrar publicaciones
-function PublicacionesTab({ publicacionesInitial, auth }) {
-    const [publicaciones, setPublicaciones] = useState(
-        publicacionesInitial?.data || []
+// Componente para mostrar noticias
+function NoticiasTab({ noticiasInitial, auth }) {
+    const [noticias, setNoticias] = useState(
+        noticiasInitial?.data || []
     );
 
     useEffect(() => {
-        setPublicaciones(publicacionesInitial?.data || []);
-    }, [publicacionesInitial]);
+        setNoticias(noticiasInitial?.data || []);
+    }, [noticiasInitial]);
 
     const { loaderRef, isLoading } = useInfiniteScroll({
-        nextPageUrl: publicacionesInitial?.next_page_url,
+        nextPageUrl: noticiasInitial?.next_page_url,
         onLoadMore: () => {
-            if (publicacionesInitial?.data) {
-                setPublicaciones((prev) => {
-                    const newItems = publicacionesInitial.data.filter(
+            if (noticiasInitial?.data) {
+                setNoticias((prev) => {
+                    const newItems = noticiasInitial.data.filter(
                         (newItem) =>
                             !prev.some((item) => item.id === newItem.id)
                     );
@@ -173,15 +173,15 @@ function PublicacionesTab({ publicacionesInitial, auth }) {
         },
     });
 
-    if (publicaciones.length === 0 && !isLoading) {
+    if (noticias.length === 0 && !isLoading) {
         return (
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 p-8 sm:p-12 text-center">
                 <FileText className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 dark:text-gray-600 mx-auto mb-3 sm:mb-4" />
                 <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                    Sin publicaciones
+                    Sin noticias
                 </h3>
                 <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">
-                    Esta institución aún no ha compartido ninguna publicación
+                    Esta institución aún no ha compartido ninguna noticia
                 </p>
             </div>
         );
@@ -189,17 +189,17 @@ function PublicacionesTab({ publicacionesInitial, auth }) {
 
     return (
         <div className="space-y-4 sm:space-y-6">
-            {publicaciones.map((publicacion) => (
+            {noticias.map((noticia) => (
                 <PublicacionCard
-                    key={publicacion.id}
-                    publicacion={publicacion}
+                    key={noticia.id}
+                    noticia={noticia}
                     userType={auth.user?.tipo_usuario}
                     auth={auth}
                 />
             ))}
 
             {/* Loader para scroll infinito */}
-            {publicacionesInitial?.next_page_url && (
+            {noticiasInitial?.next_page_url && (
                 <div ref={loaderRef}>
                     {isLoading && <LoadingSpinner />}
                 </div>
@@ -499,7 +499,7 @@ function SedesTab({ residenciasInitial }) {
 // Componente Show (único export default)
 export default function Show({
     institucion,
-    publicaciones = [],
+    noticias = [],
     residencias = [],
     materiales = [],
     auth,
@@ -521,7 +521,7 @@ export default function Show({
 
     const tabs = [
         { id: "info", label: "Información", icon: FileText },
-        { id: "publicaciones", label: "Publicaciones", icon: FileText },
+        { id: "noticias", label: "noticias", icon: FileText },
         { id: "material", label: "Cursos y Carreras", icon: BookOpen },
         { id: "sedes", label: "Facultades / Sedes", icon: Building2 },
     ];
@@ -565,8 +565,8 @@ export default function Show({
                     />
                 )}
 
-                {activeTab === "publicaciones" && (
-                    <PublicacionesTab publicacionesInitial={publicaciones} auth={auth} />
+                {activeTab === "noticias" && (
+                    <NoticiasTab noticiasInitial={noticias} auth={auth} />
                 )}
 
                 {activeTab === "material" && (

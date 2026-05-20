@@ -1,6 +1,7 @@
 import InputError from "@/Components/InputError";
 import InputLabel from "@/Components/InputLabel";
 import PrimaryButton from "@/Components/PrimaryButton";
+import SelectInput from "@/Components/SelectInput";
 import SecondaryButton from "@/Components/SecondaryButton";
 import TextInput from "@/Components/TextInput";
 import { useForm, usePage } from "@inertiajs/react";
@@ -12,7 +13,7 @@ import { geocodeDireccion, validarCoordenadasNeuquen, ciudadesNeuquen } from "@/
 export default function EditarPerfilInstitucion({ className = "", onCancel }) {
     const { props } = usePage();
     const institucion = props.institucion || {};
-
+    const regiones = props.regiones;
     const [validandoDireccion, setValidandoDireccion] = useState(false);
     const [direccionValida, setDireccionValida] = useState(null);
     const [mensajeValidacion, setMensajeValidacion] = useState("");
@@ -21,7 +22,12 @@ export default function EditarPerfilInstitucion({ className = "", onCancel }) {
 
     const { data, setData, patch, processing, errors, recentlySuccessful } =
         useForm({
-            tipo_institucion: institucion.tipo_usuario || "",
+            tipo_institucion: institucion.tipo_institucion || "",
+            region_id: institucion.region_id || "",
+            email_contacto: institucion.email_contacto || "",
+            razon_social: institucion.razon_social || "",
+            telefono: institucion.user.telefono || "",
+            nombre: institucion.user.nombre || "",
             direccion: institucion.direccion || "",
             ciudad: institucion.user.ciudad || "Neuquén Capital",
             latitud: institucion.latitud ? parseFloat(institucion.latitud) : null,
@@ -258,6 +264,43 @@ export default function EditarPerfilInstitucion({ className = "", onCancel }) {
 
             <form onSubmit={submit} className="mt-6 space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    
+                    <div>
+                        <InputLabel htmlFor="nombre" value="Nombre" />
+                        <TextInput
+                            id="nombre"
+                            
+                            className="mt-1 block w-full"
+                            value={data.nombre}
+                            onChange={(e) =>
+                                setData("nombre", e.target.value)
+                            }
+                            
+                        />
+                        <InputError
+                            message={errors.nombre}
+                            className="mt-2"
+                        />
+                    </div>
+
+                    <div>
+                        <InputLabel htmlFor="razon_social" value="Razón Social" />
+                        <TextInput
+                            id="razon_social"
+                            
+                            className="mt-1 block w-full"
+                            value={data.razon_social}
+                            onChange={(e) =>
+                                setData("razon_social", e.target.value)
+                            }
+                            
+                        />
+                        <InputError
+                            message={errors.razon_social}
+                            className="mt-2"
+                        />
+                    </div>
+
                     <div>
                         <InputLabel
                             htmlFor="tipo_institucion"
@@ -272,16 +315,32 @@ export default function EditarPerfilInstitucion({ className = "", onCancel }) {
                             }
                             required
                         >
-                            <option value="">Seleccionar tipo...</option>
-                            <option value="Universidad">Universidad</option>
-                            <option value="Terciario">Terciario</option>
-                            <option value="Establecimiento de educación superior">
-                                Establecimiento de educación superior
-                            </option>
-                            <option value="Otro">Otro</option>
+                            <option value="" disabled>Seleccionar tipo...</option>
+                            <option value="Universidad" {...data.tipo_institucion=="Universidad"? 'selected' : ''}>Universidad</option>
+                            <option value="Comercio" {...data.tipo_institucion=="Comercio"? 'selected' : ''}>Comercio</option>
+                            <option value="Organismo" {...data.tipo_institucion=="Organismo"? 'selected' : ''}>Organismo</option>
+                            <option value="Otro" {...data.tipo_institucion=="Otro"? 'selected' : ''}>Otro</option>
                         </select>
                         <InputError
                             message={errors.tipo_institucion}
+                            className="mt-2"
+                        />
+                    </div>
+
+                    <div>
+                        <InputLabel htmlFor="telefono" value="Teléfono" />
+                        <TextInput
+                            id="telefono"
+                            
+                            className="mt-1 block w-full"
+                            value={data.telefono}
+                            onChange={(e) =>
+                                setData("telefono", e.target.value)
+                            }
+                            
+                        />
+                        <InputError
+                            message={errors.telefono}
                             className="mt-2"
                         />
                     </div>
@@ -299,7 +358,7 @@ export default function EditarPerfilInstitucion({ className = "", onCancel }) {
                             onChange={(e) =>
                                 setData("ano_fundacion", e.target.value)
                             }
-                            placeholder="Ej: 1985"
+                            
                             min="1800"
                             max={new Date().getFullYear()}
                         />
@@ -308,7 +367,78 @@ export default function EditarPerfilInstitucion({ className = "", onCancel }) {
                             className="mt-2"
                         />
                     </div>
+
+                        
+                    <div>
+                        <InputLabel htmlFor="url_sitio_web" value="Sitio web" />
+                        <TextInput
+                            id="url_sitio_web"
+                            
+                            className="mt-1 block w-full"
+                            value={data.url_sitio_web}
+                            onChange={(e) =>
+                                setData("url_sitio_web", e.target.value)
+                            }
+                            
+                        />
+                        <InputError
+                            message={errors.url_sitio_web}
+                            className="mt-2"
+                        />
+                    </div>
+                    
+                    <div>
+                        <InputLabel htmlFor="email_contacto" value="Email Contacto" />
+                        <TextInput
+                            id="email_contacto"
+                            
+                            className="mt-1 block w-full"
+                            value={data.email_contacto}
+                            onChange={(e) =>
+                                setData("email_contacto", e.target.value)
+                            }
+                            
+                        />
+                        <InputError
+                            message={errors.email_contacto}
+                            className="mt-2"
+                        />
+                    </div>
+
+                    <div>
+                        <InputLabel htmlFor="region_id" value="Región" />
+                        <SelectInput
+                            options={regiones}
+                            value={data.region_id}
+                            onChange={(e) => setData("region_id", e.target.value)}
+                            onBlur={(e) => onFieldValidation("region_id", e.target.value)}
+                        />
+                        
+                        <InputError
+                            message={errors.region_id}
+                            className="mt-2"
+                        />
+                    </div>
                 </div>
+
+                    <div>
+                        <InputLabel htmlFor="descripcion" value="Descripción (es recomendable añadir las carreras o cursos disponibles)" />
+                        <textarea
+                            id="descripcion"
+                            className="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg shadow-sm resize-vertical"
+                            value={data.descripcion}
+                            onChange={(e) => setData("descripcion", e.target.value)}
+                            rows="4"
+                            maxLength="1000"
+                            
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            {data.descripcion?.length || 0}/1000 caracteres
+                        </p>
+                        <InputError message={errors.descripcion} className="mt-2" />
+                    </div>
+
+                
 
                 {/* Sección de Ubicación con Validación */}
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-gray-200 dark:border-blue-800">
@@ -467,7 +597,7 @@ export default function EditarPerfilInstitucion({ className = "", onCancel }) {
                                 ? "bg-green-600 text-white dark:bg-green-500"
                                 : direccionValida === false
                                 ? "bg-red-600 text-white dark:bg-red-500"
-                                : "bg-edu-dark text-white hover:bg-gray-800 dark:bg-gray-600 dark:hover:bg-gray-700"
+                                : "bg-blue-950 text-white hover:bg-gray-800 dark:bg-gray-600 dark:hover:bg-gray-700"
                         } disabled:opacity-50 disabled:cursor-not-allowed`}
                     >
                         {validandoDireccion ? (
@@ -546,41 +676,6 @@ export default function EditarPerfilInstitucion({ className = "", onCancel }) {
                             </>
                         )}
                     </button>
-                </div>
-
-                <div>
-                    <InputLabel htmlFor="url_sitio_web" value="Sitio web" />
-                    <TextInput
-                        id="url_sitio_web"
-                        type="url"
-                        className="mt-1 block w-full"
-                        value={data.url_sitio_web}
-                        onChange={(e) =>
-                            setData("url_sitio_web", e.target.value)
-                        }
-                        placeholder="https://www.mi-institucion.com"
-                    />
-                    <InputError
-                        message={errors.url_sitio_web}
-                        className="mt-2"
-                    />
-                </div>
-
-                <div>
-                    <InputLabel htmlFor="descripcion" value="Descripción (es recomendable añadir las carreras o cursos disponibles)" />
-                    <textarea
-                        id="descripcion"
-                        className="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg shadow-sm resize-vertical"
-                        value={data.descripcion}
-                        onChange={(e) => setData("descripcion", e.target.value)}
-                        rows="4"
-                        maxLength="1000"
-                        placeholder="Describí tu institución..."
-                    />
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        {data.descripcion?.length || 0}/1000 caracteres
-                    </p>
-                    <InputError message={errors.descripcion} className="mt-2" />
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">

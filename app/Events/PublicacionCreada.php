@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use App\Models\Publicacion;
+use App\Models\Noticia;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
@@ -14,13 +14,13 @@ class PublicacionCreada implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $publicacion;
+    public $noticia;
     public $institucion;
 
-    public function __construct(Publicacion $publicacion)
+    public function __construct(Noticia $noticia)
     {
-        $this->publicacion = $publicacion;
-        $this->institucion = $publicacion->institucion;
+        $this->noticia = $noticia;
+        $this->institucion = $noticia->institucion;
     }
 
     public function broadcastAs()
@@ -42,9 +42,9 @@ class PublicacionCreada implements ShouldBroadcast
     public function broadcastWith()
     {
         return [
-            'mensaje' => " ha publicado: {$this->publicacion->titulo}",
+            'mensaje' => " ha publicado: {$this->noticia->titulo}",
             'institucion_id' => $this->institucion->id,
-            'publicacion_id' => $this->publicacion->id,
+            'noticia_id' => $this->noticia->id,
             'usuario' => [
                 'id' => $this->institucion->user->id,
                 'nombre' => $this->institucion->nombre,

@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('tipo'); // 'like', 'comentario', 'vista', 'guardado', 'compartido'
-            $table->string('modelo'); // 'publicacion', 'material', etc.
+            $table->string('modelo'); // 'noticia', 'material', etc.
             $table->unsignedBigInteger('modelo_id');
             $table->text('descripcion')->nullable();
             $table->json('metadata')->nullable();

@@ -80,8 +80,8 @@ function ActividadCard({ actividad }) {
     const Icon = config.icon;
 
     const getUrl = () => {
-        if (actividad.modelo === "publicacion") {
-            return `/publicaciones/${actividad.modelo_id}`;
+        if (actividad.modelo === "noticia") {
+            return `/noticias/${actividad.modelo_id}`;
         } else if (actividad.modelo === "material") {
             return `/material/${actividad.modelo_id}`;
         } else if (actividad.modelo === "institucion") {
@@ -92,8 +92,8 @@ function ActividadCard({ actividad }) {
 
     const getTitulo = () => {
         if (actividad.objeto) {
-            if (actividad.modelo === "publicacion") {
-                return actividad.objeto.titulo || "Publicación";
+            if (actividad.modelo === "noticia") {
+                return actividad.objeto.titulo || "Noticia";
             } else if (actividad.modelo === "material") {
                 return actividad.objeto.nombre || "Curso/Carrera";
             } else if (actividad.modelo === "institucion") {

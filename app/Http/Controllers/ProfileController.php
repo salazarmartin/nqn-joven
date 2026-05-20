@@ -16,7 +16,9 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use App\Models\Like;
-use App\Models\Publicacion;
+use App\Models\Noticia;
+use App\Models\Region;
+use App\Models\Estudio;
 
 class ProfileController extends Controller
 {
@@ -49,13 +51,20 @@ class ProfileController extends Controller
             $interests = $perfil->interests;
         }
 
+        $regiones = Region::orderBy('nombre','asc')->get();
+        $estudios = Estudio::orderBy('nombre','asc')->get();
+        
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => session('status'),
             'auth' => [
                 'user' => $request->user(),
             ],
+            'region' => $persona->region,
+            'estudio' => $persona->estudio,
             'residencias' => $residencias,
+            'regiones' => $regiones,
+            'estudios' => $estudios,
             'persona' => $persona,
             'institucion' => $institucion,
             'currentInterests' => $interests,
@@ -221,6 +230,11 @@ class ProfileController extends Controller
             $rules['fecha_nac'] = 'required|date|before:today|after:' . now()->subYears(120)->format('Y-m-d');
             $rules['biografia'] = 'nullable|string|max:500';
             $rules['ciudad'] = 'required|string|min:2|max:100';
+            $rules['region_id'] = 'required';
+            $rules['estudio_id'] = 'required';
+            $rules['dni'] = 'required';
+            $rules['trabaja_emprende'] = 'required';
+            $rules['username'] = 'required|unique:' . PerfPersona::class;
             $rules['provincia'] = 'required|string|min:2|max:100';
         } else {
             $rules['tipo_institucion'] = 'required|string|min:3|max:100';
@@ -230,7 +244,10 @@ class ProfileController extends Controller
             $rules['direccion'] = 'required|string|min:5|max:255';
             $rules['latitud'] = 'required|numeric|between:-90,90';
             $rules['longitud'] = 'required|numeric|between:-180,180';
-            $rules['url_sitio_web'] = 'nullable|url|max:255|regex:/^https?:\/\/.+\..+/';
+            $rules['url_sitio_web'] = 'nullable|url|max:255';
+            $rules['email_contacto'] = 'nullable|max:255';
+            $rules['razon_social'] = 'required';
+            $rules['region_id'] = 'required|numeric';
             $rules['descripcion'] = 'nullable|string|max:1000';
             $rules['ano_fundacion'] = 'nullable|integer|min:1800|max:' . date('Y');
             $rules['tipo_documento'] = 'required|in:CUIT,CUIL,DNI';
@@ -250,6 +267,11 @@ class ProfileController extends Controller
             'telefono.regex' => 'El teléfono solo puede contener números, espacios y guiones',
             'ciudad.required' => 'La ciudad es obligatoria',
             'provincia.required' => 'La provincia es obligatoria',
+            'region_id.required' => 'La región es obligatoria',
+            'estudio_id.required' => 'Los estudios son obligatorios',
+            'dni.required' => 'El dni es obligatorio',
+            'trabaja_emprende.required' => 'Trabaja/Emprende es obligatorio',
+            'usename.required' => 'El nombre de usuario es obligatorio',
             'fecha_nac.required' => 'La fecha de nacimiento es obligatoria',
             'fecha_nac.before' => 'La fecha de nacimiento no puede ser futura',
             'fecha_nac.after' => 'La fecha de nacimiento no es válida',
@@ -276,6 +298,9 @@ class ProfileController extends Controller
             'profile_photo_path.image' => 'El archivo debe ser una imagen',
             'profile_photo_path.mimes' => 'Solo se permiten imágenes JPG, PNG o WEBP',
             'profile_photo_path.max' => 'La imagen no puede superar los 2MB',
+            'razon_social.required' => 'La razón social es obligatoria',
+            'region_id.required' => 'La región es obligatoria',
+            'email_contacto.required' => 'El email de contacto es obligatorio',
         ]);
 
         // Validación adicional del documento si es institución
@@ -322,6 +347,11 @@ class ProfileController extends Controller
                     'fecha_nac' => $validated['fecha_nac'],
                     'interests' => $validated['interests'],
                     'biografia' => $validated['biografia'] ?? null,
+                    'region_id' => $validated['region_id'],
+                    'estudio_id' => $validated['estudio_id'],
+                    'username' => $validated['username'],
+                    'trabaja_emprende' => $validated['trabaja_emprende'],
+                    'dni' => $validated['dni'],
                 ]
             );
 
@@ -347,6 +377,9 @@ class ProfileController extends Controller
             $institucion = PerfInstitucion::updateOrCreate(
                 ['user_id' => $user->id],
                 [
+                    'email_contacto' => $validated['email_contacto'],
+                    'razon_social' => $validated['razon_social'],
+                    'region_id' => $validated['region_id'],
                     'tipo_institucion' => $tipoInstitucionFinal,
                     'direccion' => $direccionCompleta,
                     'ciudad' => $validated['ciudad'],
@@ -403,22 +436,33 @@ class ProfileController extends Controller
         'ciudad' => 'required|string|min:2|max:100',
         'latitud' => 'required|numeric|between:-90,90',
         'longitud' => 'required|numeric|between:-180,180',
-        'url_sitio_web' => 'nullable|url|max:255|regex:/^https?:\/\/.+\..+/',
+        'url_sitio_web' => 'nullable|max:255',
         'descripcion' => 'nullable|string|max:1000',
-        'ano_fundacion' => 'nullable|integer|min:1800|max:' . date('Y'),
+        'ano_fundacion' => 'nullable|integer|min:1500|max:' . date('Y'),
+        'razon_social' => 'required',
+        'region_id' => 'required',
+        'nombre' => 'required',
+        'telefono' => 'required',
+        'email_contacto' => 'required',
+        
     ], [
         'tipo_institucion.required' => 'El tipo de institución es obligatorio.',
         'direccion.required' => 'La dirección es obligatoria.',
+        'email_contacto.required' => 'El email de contacto es obligatorio.',
+        'razon_social.required' => 'La razón social es obligatoria.',
+        'region_id.required' => 'La región es obligatoria.',
+        'nombre.required' => 'El nombre es obligatorio.',
+        'telefono.required' => 'El teléfono es obligatorio.',
         'ciudad.required' => 'La ciudad es obligatoria.',
         'latitud.required' => 'Debes validar la dirección primero.',
         'longitud.required' => 'Debes validar la dirección primero.',
         'latitud.between' => 'Las coordenadas de latitud no son válidas.',
         'longitud.between' => 'Las coordenadas de longitud no son válidas.',
-        'url_sitio_web.url' => 'Ingresá una URL válida.',
-        'url_sitio_web.regex' => 'La URL debe comenzar con http:// o https://.',
+        
+        
         'descripcion.max' => 'La descripción no puede exceder 1000 caracteres.',
         'ano_fundacion.integer' => 'El año de fundación debe ser un número.',
-        'ano_fundacion.min' => 'El año de fundación no puede ser anterior a 1800.',
+        'ano_fundacion.min' => 'El año de fundación no puede ser anterior a 1500.',
         'ano_fundacion.max' => 'El año de fundación no puede ser futuro.',
     ]);
 
@@ -427,6 +471,10 @@ class ProfileController extends Controller
 
     // Actualizar todos los campos
     $institucion->update([
+        'razon_social' => $validated['razon_social'],
+        'region_id' => $validated['region_id'],
+        'email_contacto' => $validated['email_contacto'],
+        
         'tipo_institucion' => $validated['tipo_institucion'],
         'direccion' => $validated['direccion'],
         'ciudad' => $validated['ciudad'],
@@ -442,6 +490,8 @@ class ProfileController extends Controller
 
     // También actualizar la ciudad en la tabla users
     $user->update([
+        'nombre' => $validated['nombre'],
+        'telefono' => $validated['telefono'],
         'ciudad' => $validated['ciudad'],
     ]);
 
@@ -472,9 +522,40 @@ class ProfileController extends Controller
                 'max:255',
                 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/'
             ],
+            'ciudad' => [
+                'required',
+                'string',
+                'min:2',
+                'max:255',
+                'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$/'
+            ],
+            'provincia' => [
+                'required',
+                'string',
+                'min:2',
+                'max:255',
+                'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$/'
+            ],
+            'telefono' => [
+                'required'
+            ],
+            'region_id' => [
+                'required'
+            ],
+            'estudio_id' => [
+                'required'
+            ],
+            'trabaja_emprende' => [
+                'required',
+                
+            ],
             'biografia' => 'nullable|string|max:500',
         ], [
             'apellido.required' => 'El apellido es obligatorio.',
+            
+            'ciudad.required' => 'La ciudad es obligatoria.',
+            'provincia.required' => 'La provincia es obligatoria.',
+            'trabaja_emprende.required' => 'Trabaja/Emprende es obligatorio.',
             'apellido.min' => 'El apellido debe tener al menos 2 caracteres.',
             'apellido.regex' => 'El apellido solo puede contener letras.',
             'biografia.max' => 'La biografía no puede exceder 500 caracteres.',
@@ -482,12 +563,18 @@ class ProfileController extends Controller
 
         $user->update([
             'nombre' => $validated['nombre'],
+            'ciudad' => $validated['ciudad'],
+            'provincia' => $validated['provincia'],
+            'telefono' => $validated['telefono'],
         ]);
 
         // Buscar el perfil existente
         $persona = PerfPersona::where('user_id', $user->id)->firstOrFail();
 
         $persona->update([
+            'trabaja_emprende' => $validated['trabaja_emprende'],
+            'region_id' => $validated['region_id'],
+            'estudio_id' => $validated['estudio_id'],
             'apellido' => $validated['apellido'],
             'biografia' => $validated['biografia'] ?? null,
         ]);
@@ -497,7 +584,7 @@ class ProfileController extends Controller
 
 
     /**
-     * Ver publicaciones a las que le dio like el usuario
+     * Ver noticias a las que le dio like el usuario
      */
     public function likes(Request $request)
     {
@@ -512,13 +599,13 @@ class ProfileController extends Controller
             $perfKey = 'perf_institucion_id';
         }
 
-        // Obtener los IDs de publicaciones con like
+        // Obtener los IDs de noticias con like
         $likedIds = Like::where($perfKey, $perfId)
-            ->where('target_tipo', 'publicacion')
+            ->where('target_tipo', 'noticia')
             ->pluck('target_id');
 
-        // Obtener las publicaciones completas
-        $likedPublicaciones = Publicacion::whereIn('id', $likedIds)
+        // Obtener las noticias completas
+        $likedNoticias = Noticia::whereIn('id', $likedIds)
             ->with([
                 'institucion.user',
                 'media',
@@ -529,25 +616,25 @@ class ProfileController extends Controller
             ->withCount(['likes', 'comentarios'])
             ->latest()
             ->get()
-            ->map(function ($publicacion) use ($user, $perfKey, $perfId) {
+            ->map(function ($noticia) use ($user, $perfKey, $perfId) {
                 // Agregar información de si el usuario actual dio like
-                $publicacion->user_has_liked = true; // Sabemos que dio like
+                $noticia->user_has_liked = true; // Sabemos que dio like
 
                 // Agregar información de favorito (solo para personas)
                 if ($user->tipo_usuario === 'persona') {
-                    $publicacion->is_favorite = $publicacion->favoritos->contains('perf_persona_id', $perfId);
+                    $noticia->is_favorite = $noticia->favoritos->contains('perf_persona_id', $perfId);
                 } else {
-                    $publicacion->is_favorite = false;
+                    $noticia->is_favorite = false;
                 }
 
-                return $publicacion;
+                return $noticia;
             });
 
         return Inertia::render('Profile/Likes', [
             'auth' => [
                 'user' => $user,
             ],
-            'likedPublicaciones' => $likedPublicaciones,
+            'likedNoticias' => $likedNoticias,
         ]);
     }
 }

@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 use Carbon\Carbon;
+use App\Models\Region;
+use App\Models\Estudio;
 
 class EnsureProfileIsComplete
 {
@@ -19,11 +21,19 @@ class EnsureProfileIsComplete
             'institucion.rechazar'
         ];
 
+        $regiones = Region::orderBy('nombre','asc')->get();
+        $estudios = Estudio::orderBy('nombre','asc')->get();
+
         if ($request->routeIs($rutasPublicas)) {
             return $next($request);
         }
 
         $user = $request->user();
+
+        // Los admins pasan sin restricciones de perfil
+        if ($user && $user->tipo_usuario === 'admin') {
+            return $next($request);
+        }
 
         // si es un usuario autenticado
         if ($user) {
@@ -65,7 +75,7 @@ class EnsureProfileIsComplete
                 ];
 
                 if (!$request->routeIs(...$rutasPermitidas)) {
-                    return redirect()->route('completar.datos', ['type' => $user->tipo_usuario])
+                    return redirect()->route('completar.datos', ['type' => $user->tipo_usuario, 'regiones' => $regiones, 'estudios'=>$estudios])
                         ->with('warning', 'Debes completar tu perfil para continuar.');
                 }
             }
@@ -133,7 +143,7 @@ class EnsureProfileIsComplete
                     $typeEnSesion = $registroTemporal['tipo_usuario'];
 
                     if ($typeEnUrl !== $typeEnSesion) {
-                        return redirect()->route('completar.datos', ['type' => $typeEnSesion])
+                        return redirect()->route('completar.datos', ['type' => $typeEnSesion, 'regiones' => $regiones, 'estudios'=>$estudios])
                             ->withErrors(['error' => 'No podés acceder a ese tipo de registro.']);
                     }
                 }

@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('coment_publicaciones', function (Blueprint $table) {
+        Schema::create('coment_noticias', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('publicacion_id')->constrained('publicaciones')->onDelete('cascade');
+            $table->foreignId('noticia_id')->constrained('noticias')->onDelete('cascade');
             $table->foreignId('perf_persona_id')->nullable()->constrained('perf_persona')->onDelete('cascade');
             $table->foreignId('perf_institucion_id')->nullable()->constrained('perf_institucion')->onDelete('cascade');
             $table->text('contenido');
-            $table->foreignId('coment_padre_id')->nullable()->constrained('coment_publicaciones')->onDelete('cascade');
+            $table->foreignId('coment_padre_id')->nullable()->constrained('coment_noticias')->onDelete('cascade');
             $table->boolean('oculto')->default(false);
             $table->timestamps();
             $table->softDeletes();
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('coment_publicaciones');
+        Schema::dropIfExists('coment_noticias');
     }
 };

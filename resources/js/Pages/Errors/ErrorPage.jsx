@@ -39,7 +39,7 @@ export default function ErrorPage({ status = 500, message = "" }) {
                 {/* img */}
                 <div className="mt-6">
                     <img
-                        src="/images/logo-eduquen.webp"
+                        src="/images/logo-nqnjoven.png"
                         alt="Error Illustration"
                         className="w-52 opacity-90"
                     />

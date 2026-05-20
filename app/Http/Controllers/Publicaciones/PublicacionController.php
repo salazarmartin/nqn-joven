@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Publicaciones;
 use App\Http\Controllers\ActividadController;
 use App\Http\Controllers\Controller;
 use App\Models\Publicacion;
+use App\Models\Evento;
 use App\Models\PublicacionMedia;
 use App\Models\VisitaInstitucion;
+use App\Models\Categoria;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -206,10 +208,28 @@ class PublicacionController extends Controller
         if ($user->tipo_usuario === 'persona') {
             $institucionesVisitadas =   VisitaInstitucion::ultimasVisitadas($user->id, 5);
         }
+        $categorias = Categoria::orderBy('nombre')->get();
+
+        $publicaciones = Publicacion::with('region')
+            ->with('categoria')
+            ->where('destacado','=',1)
+            ->select('titulo','contenido as descripcion', 'created_at', 'categoria_id', 'region_id')
+            ->orderBy('created_at','asc');
+
+        $eventos = Evento::with('region')
+            ->with('categoria')
+            ->where('destacado','=',1)
+            ->select('titulo','descripcion', 'created_at', 'categoria_id', 'region_id')
+            ->orderBy('fecha','asc');
+
+        $destacados = $publicaciones->union($eventos)->get();
 
         return Inertia::render('Inicio', [
             'publicaciones' => $publicaciones,
+            'categorias' => $categorias,
+            'destacados' => $destacados,
             'userType' => $user->tipo_usuario,
+            'regionNombre' => $user->persona->region->nombre,
             'institucionesVisitadas' => $institucionesVisitadas,
         ]);
     }

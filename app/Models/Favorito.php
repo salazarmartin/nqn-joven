@@ -14,7 +14,7 @@ class Favorito extends Model
     protected $fillable = [
         'perf_persona_id',
         'perf_institucion_id',
-        'publicacion_id',
+        'noticia_id',
     ];
 
     // Relaciones
@@ -23,8 +23,8 @@ class Favorito extends Model
         return $this->belongsTo(PerfPersona::class, 'perf_persona_id');
     }
 
-    public function publicacion()
+    public function noticia()
     {
-        return $this->belongsTo(Publicacion::class, 'publicacion_id');
+        return $this->belongsTo(Noticia::class, 'noticia_id');
     }
 }

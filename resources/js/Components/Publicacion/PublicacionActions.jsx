@@ -126,7 +126,7 @@ export function FavoriteButton({
     );
 }
 
-export function ShareButton({ onShare, publicacionId, size = "default" }) {
+export function ShareButton({ onShare, noticiaId, size = "default" }) {
     const sizeClasses = {
         small: "w-4 h-4",
         default: "w-5 h-5",
@@ -135,13 +135,13 @@ export function ShareButton({ onShare, publicacionId, size = "default" }) {
 
     const handleShare = () => {
         if (onShare) {
-            onShare(publicacionId);
+            onShare(noticiaId);
         } else {
-            const url = `${window.location.origin}/publicaciones/${publicacionId}`;
+            const url = `${window.location.origin}/noticias/${noticiaId}`;
             if (navigator.share) {
                 navigator
                     .share({
-                        title: "Compartir publicación",
+                        title: "Compartir noticia",
                         url: url,
                     })
                     .catch((err) => console.log("Error al compartir:", err));
@@ -156,7 +156,7 @@ export function ShareButton({ onShare, publicacionId, size = "default" }) {
         <button
             onClick={handleShare}
             className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition"
-            title="Compartir publicación"
+            title="Compartir noticia"
         >
             <Share2 className={sizeClasses[size]} />
         </button>
@@ -175,7 +175,7 @@ export function PublicacionActions({
     onFavorite,
     canFavorite = false,
     onShare,
-    publicacionId,
+    noticiaId,
     showShare = true,
     size = "default",
     className = "",
@@ -217,7 +217,7 @@ export function PublicacionActions({
                 {showShare && (
                     <ShareButton
                         onShare={onShare}
-                        publicacionId={publicacionId}
+                        noticiaId={noticiaId}
                         size={size}
                     />
                 )}

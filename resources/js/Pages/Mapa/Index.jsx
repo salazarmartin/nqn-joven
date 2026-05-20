@@ -603,7 +603,7 @@ export default function MapaIndex({ auth, instituciones, tiposInstitucion, ubica
     };
 
     return (
-        <AuthenticatedLayout user={auth.user} showRecomendaciones={false} fullWidth={true} maxWidth="w-full" >
+        <AuthenticatedLayout user={auth.user}  fullWidth={true} maxWidth="w-full" >
             <Head title="Mapa" />
 
             <div className="relative w-full h-full bg-gray-50 overflow-hidden">

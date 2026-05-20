@@ -10,7 +10,7 @@ function FooterLinks() {
         { label: "Política de cookies", href: "#" },
         { label: "Accesibilidad", href: "#" },
         {
-            label: "Desarrollado por: leandroresler4@gmail.com y dante.avila",
+            label: "",
             href: "#",
         },
     ];
@@ -35,7 +35,7 @@ function FooterLinks() {
                 ))}
             </div>
             <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
-                © {new Date().getFullYear()} EDUQUÉN
+                © {new Date().getFullYear()} NQN Jóven
             </p>
         </div>
     );

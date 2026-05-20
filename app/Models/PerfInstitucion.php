@@ -27,6 +27,9 @@ class PerfInstitucion extends Model
         'interests',
         'doc_identificador',
         'tipo_documento',
+        'razon_social',
+        'region_id',
+        'email_contacto',
     ];
 
     protected $casts = [
@@ -79,9 +82,14 @@ class PerfInstitucion extends Model
         return $this->user?->email;
     }
 
-    public function publicaciones()
+    public function region()
     {
-        return $this->hasMany(Publicacion::class, 'perf_institucion_id');
+        return $this->belongsTo(Region::class);
+    }
+
+    public function noticias()
+    {
+        return $this->hasMany(Noticia::class, 'perf_institucion_id');
     }
 
     public function guardadaPorUsuarios()

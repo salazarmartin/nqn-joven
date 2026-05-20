@@ -19,12 +19,12 @@ class CustomVerifyEmail extends VerifyEmailNotification
 
         // Podés personalizar todo el contenido del email acá:
         return (new MailMessage)
-            ->subject('Verificá tu cuenta en EDUQUÉN')
+            ->subject('Verificá tu cuenta en NQN-Jóven')
             ->greeting('¡Hola ' . $notifiable->nombre . '!')
-            ->line('Gracias por registrarte en EDUQUÉN. Solo falta un paso:')
+            ->line('Gracias por registrarte en NQN-Jóven. Solo falta un paso:')
             ->action('Verificar mi correo', $verificationUrl)
             ->line('Si no creaste esta cuenta, podés ignorar este mensaje.')
-            ->salutation('Saludos, el equipo de EDUQUÉN');
+            ->salutation('Saludos, el equipo de NQN-Jóven');
     }
 
     /**

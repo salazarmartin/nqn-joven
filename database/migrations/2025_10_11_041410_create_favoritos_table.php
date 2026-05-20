@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('favoritos', function (Blueprint $table) {
             $table->id();
             $table->foreignId('perf_persona_id')->constrained('perf_persona')->onDelete('cascade');
-            $table->foreignId('publicacion_id')->constrained('publicaciones')->onDelete('cascade');
+            $table->foreignId('noticia_id')->constrained('noticias')->onDelete('cascade');
             $table->timestamps();
         });
     }

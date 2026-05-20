@@ -12,13 +12,13 @@ use App\Events\LikeCreado;
 class LikeController extends Controller
 {
     /**
-     * Toggle (crear o eliminar) like en una publicación o comentario
+     * Toggle (crear o eliminar) like en una noticia o comentario
      */
     public function toggle(Request $request)
     {
         $validated = $request->validate([
             'target_id' => 'required|integer',
-            'target_tipo' => 'required|in:publicacion,comentario',
+            'target_tipo' => 'required|in:noticia,comentario',
         ]);
 
         $user = Auth::user();
@@ -47,7 +47,7 @@ class LikeController extends Controller
             ActividadController::registrar(
                 $user->id,
                 'unlike',
-                'publicacion',
+                'noticia',
                 $validated['target_id'],
                 'Quitaste tu like'
             );
@@ -69,9 +69,9 @@ class LikeController extends Controller
             // Determinar el dueño según el tipo de target
             $duenoUserId = null;
             
-            if ($validated['target_tipo'] === 'publicacion') {
-                $publicacion = $like->publicacion;
-                $duenoUserId = $publicacion->institucion->user->id;
+            if ($validated['target_tipo'] === 'noticia') {
+                $noticia = $like->noticia;
+                $duenoUserId = $noticia->institucion->user->id;
             } elseif ($validated['target_tipo'] === 'comentario') {
                 $comentario = $like->comentario;
                 // El dueño del comentario puede ser persona o institución
@@ -89,7 +89,7 @@ class LikeController extends Controller
                 'like',
                 $validated['target_tipo'], // 👈 Usar el tipo correcto
                 $validated['target_id'],
-                'Te gustó ' . ($validated['target_tipo'] === 'publicacion' ? 'una publicación' : 'un comentario')
+                'Te gustó ' . ($validated['target_tipo'] === 'noticia' ? 'una noticia' : 'un comentario')
             );
 
             return response()->json([

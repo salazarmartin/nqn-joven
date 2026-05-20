@@ -146,14 +146,14 @@ export default function Login({ status, canResetPassword }) {
                         {canResetPassword && (
                             <Link
                                 href={route("password.request")}
-                                className="rounded-md text-sm font-bold text-gray-700 hover:text-black focus:outline-none"
+                                className="rounded-md text-sm font-bold text-gray-600 hover:text-black focus:outline-none"
                             >
                                 ¿Olvidaste tu contraseña?
                             </Link>
                         )}
                         <Link
                             href={route("register")}
-                            className="rounded-md text-sm font-bold text-gray-700 hover:text-black focus:outline-none"
+                            className="rounded-md text-sm font-bold text-gray-600 hover:text-black focus:outline-none"
                         >
                             ¿No tenes cuenta?
                         </Link>

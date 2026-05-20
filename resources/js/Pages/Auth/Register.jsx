@@ -15,6 +15,8 @@ export default function Register() {
         tipo_usuario: "persona",
     });
 
+    const [nosepuedeconesemail, setNosepuede] = useState(null);
+
     const [isInstitution, setIsInstitution] = useState(false); // estado para saber si es institucion o no
 
     /* validaciones basicas en la vista, en conjunto con @/utils/validaciones */
@@ -26,20 +28,56 @@ export default function Register() {
         data.password.trim() !== "" &&
         data.password_confirmation.trim() !== "";
 
-    // errores de registro en el servidor
-    const hasServerError =
-        errors.email || errors.password || errors.password_confirmation;
-
-    const handleEmailChange = (e) => {
+    
+    
+ const handleEmailChange = async (e) => {
         const value = e.target.value;
         setData("email", value);
+            
+            try {
+                
+                const url = `/registereduser/chequearemail/`+value;
+                const response = await fetch(
+                    url,
+                    {
+                        method: "GET",
+                        headers: {
+                            
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": document.querySelector(
+                                'meta[name="csrf-token"]'
+                            ).content,
+                        },
+                    }
+                );
+                
 
-        if (clientErrors.email && value.trim() !== "") {
-            setClientErrors((prev) => ({
-                ...prev,
-                email: null,
-            }));
-        }
+                const data = await response.json();
+                console.log(data);
+                console.log("er:"+clientErrors.email);
+                if (clientErrors.email && value.trim() !== "") {
+                        setClientErrors((prev) => ({
+                            ...prev,
+                            email: null,
+                        }));
+                        console.log("entro"); 
+                    }
+                if(data.sepuede==false){
+                    
+                    setNosepuede(true);
+                }else{
+                    
+                    setNosepuede(false);
+                }
+
+            } catch (error) {
+                
+                console.error("Error al procesar la solicitud");
+            } finally {
+                
+            }
+            
+        console.log("var:"+nosepuedeconesemail);
     };
 
     const handlePasswordChange = (e) => {
@@ -72,6 +110,10 @@ export default function Register() {
         setData("tipo_usuario", checked ? "institucion" : "persona");
     };
 
+    // errores de registro en el servidor
+    const hasServerError =
+        (nosepuedeconesemail && errors.email) || errors.password || errors.password_confirmation;
+
     const submit = (e) => {
         e.preventDefault();
 
@@ -99,7 +141,7 @@ export default function Register() {
             onFinish: () => reset("password", "password_confirmation"),
         });
     };
-
+console.log("anteul-"+nosepuedeconesemail);
     return (
         <GuestLayout>
             <Head title="Register" />
@@ -110,7 +152,7 @@ export default function Register() {
                 className="w-full max-w-sm sm:max-w-md p-4 sm:p-8"
             >
                 <div className="mt-4">
-                    <InputLabel htmlFor="email" value="Correo electronico" />
+                    <InputLabel style={{color:"black"}} htmlFor="email" value="Correo electronico" />
 
                     <RoundedInputText
                         id="email"
@@ -125,7 +167,7 @@ export default function Register() {
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Contraseña" />
+                    <InputLabel style={{color:"black"}} htmlFor="password" value="Contraseña" />
 
                     <RoundedInputText
                         id="password"
@@ -140,7 +182,7 @@ export default function Register() {
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel
+                    <InputLabel style={{color:"black"}} 
                         htmlFor="password_confirmation"
                         value="Confirmar Contraseña"
                     />
@@ -158,17 +200,7 @@ export default function Register() {
                 </div>
 
                 <div className="mt-4 flex gap-3 items-center">
-                    <InputLabel
-                        htmlFor="check_type"
-                        value="Si querés acceder como institución"
-                    />
-
-                    <input
-                        type="checkbox"
-                        name="check_type"
-                        checked={isInstitution}
-                        onChange={handleInstitutionChange}
-                    />
+                    
                 </div>
 
                 {/* errores */}
@@ -186,15 +218,16 @@ export default function Register() {
                         />
                     </div>
                 )}
-
-                {hasServerError &&
+{console.log('-'+nosepuedeconesemail)}
+                {
+                nosepuedeconesemail &&
                     !clientErrors.email &&
                     !clientErrors.password &&
                     !clientErrors.password_confirmation && (
                         <div className="mt-6 flex justify-center">
                             <InputError
                                 message={
-                                    "Error en el registro. Verifica los datos ingresados."
+                                    "El email ingresado ya se encontraba registrado en el sistema."
                                 }
                                 className="text-center font-semibold "
                             />
@@ -204,7 +237,7 @@ export default function Register() {
                 <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
                     <Link
                         href={route("login")}
-                        className="text-sm font-bold text-gray-700 hover:text-black focus:outline-none text-center"
+                        className="text-sm font-bold text-gray-600 hover:text-black focus:outline-none text-center"
                     >
                         ¿Ya estas registrado?
                     </Link>

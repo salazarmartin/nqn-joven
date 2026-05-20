@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('publicacion_media', function (Blueprint $table) {
+        Schema::create('noticia_media', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('publicacion_id')->constrained('publicaciones')->onDelete('cascade');
+            $table->foreignId('noticia_id')->constrained('noticias')->onDelete('cascade');
             $table->enum('tipo', ['imagen', 'video', 'documento']);
             $table->string('url');
             $table->tinyInteger('orden')->nullable(); // si es un carrusel
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('publicacion_media');
+        Schema::dropIfExists('noticia_media');
     }
 };

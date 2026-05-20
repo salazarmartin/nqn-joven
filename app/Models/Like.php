@@ -23,15 +23,15 @@ class Like extends Model
         return $this->belongsTo(PerfInstitucion::class, 'perf_institucion_id');
     }
 
-    public function publicacion()
+    public function noticia()
     {
-        return $this->belongsTo(Publicacion::class, 'target_id');
+        return $this->belongsTo(Noticia::class, 'target_id');
     }
 
 
     public function comentario()
     {
-        return $this->belongsTo(ComentPublicacion::class, 'target_id');
+        return $this->belongsTo(ComentNoticia::class, 'target_id');
     }
 
 

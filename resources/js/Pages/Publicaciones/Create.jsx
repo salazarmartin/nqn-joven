@@ -154,14 +154,14 @@ export default function Create({ auth }) {
             formData.append(`media[${index}][tipo]`, media.tipo);
         });
 
-        const loadingToast = toast.loading("Creando publicación...");
+        const loadingToast = toast.loading("Creando noticia...");
 
-        router.post("/publicaciones", formData, {
+        router.post("/noticias", formData, {
             forceFormData: true,
             preserveScroll: false,
             onSuccess: () => {
                 toast.dismiss(loadingToast);
-                toast.success("¡Publicación creada exitosamente!");
+                toast.success("¡noticia creada exitosamente!");
                 setFormState({
                     titulo: "",
                     contenido: "",
@@ -183,7 +183,7 @@ export default function Create({ auth }) {
                 } else if (errors.categorias) {
                     toast.error(errors.categorias[0]);
                 } else {
-                    toast.error("Hubo un error al crear la publicación");
+                    toast.error("Hubo un error al crear la noticia");
                 }
 
                 setProcessing(false);
@@ -246,15 +246,15 @@ export default function Create({ auth }) {
     };
 
     return (
-        <AuthenticatedLayout user={auth.user} showRecomendaciones={false}>
-            <Head title="Crear Publicación" />
+        <AuthenticatedLayout user={auth.user} >
+            <Head title="Crear noticia" />
 
             <div className="py-8">
                 <div className="max-w-3xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white dark:bg-gray-800 overflow-hidden sm:rounded-lg border border-gray-200 dark:border-gray-700 transition-colors">
                         <div className="p-8">
                             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-                                Crear Nueva Publicación
+                                Crear Nueva noticia
                             </h1>
 
                             <form onSubmit={handleSubmit} className="space-y-6">
@@ -287,7 +287,7 @@ export default function Create({ auth }) {
                                         }}
                                         onBlur={() => handleBlur("titulo")}
                                         className="mt-1 block w-full rounded-lg"
-                                        placeholder="Título de la publicación"
+                                        placeholder="Título de la noticia"
                                         maxLength={CONFIG.titulo.maxLength}
                                     />
                                     <div className="flex justify-between items-start mt-1">
@@ -338,7 +338,7 @@ export default function Create({ auth }) {
                                         onBlur={() => handleBlur("contenido")}
                                         className="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:border-gray-500 focus:ring-gray-500 rounded-lg shadow-sm"
                                         rows="8"
-                                        placeholder="Escribe el contenido de tu publicación..."
+                                        placeholder="Escribe el contenido de tu noticia..."
                                         maxLength={CONFIG.contenido.maxLength}
                                     />
                                     <div className="flex justify-between items-start mt-1">
@@ -367,7 +367,7 @@ export default function Create({ auth }) {
                                             <Tag className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                                             <div>
                                                 <p className="font-bold text-lg text-gray-900 dark:text-white">
-                                                    Categorías de la publicación
+                                                    Categorías de la noticia
                                                     *
                                                 </p>
                                                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -605,7 +605,7 @@ export default function Create({ auth }) {
                                     )}
                                 </div>
 
-                                {/* Estado de publicación */}
+                                {/* Estado de noticia */}
                                 <div className="flex items-center space-x-2">
                                     <input
                                         id="publicado"
@@ -628,7 +628,7 @@ export default function Create({ auth }) {
                                 {/* Botones */}
                                 <div className="flex items-center justify-end space-x-4 pt-4">
                                     <a
-                                        href="/publicaciones/misPublicaciones"
+                                        href="/noticias/misPublicaciones"
                                         className="inline-flex items-center px-6 py-3 bg-white border dark:bg-gray-300 dark:hover:bg-gray-200 border-gray-300 rounded-lg text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150"
                                     >
                                         Cancelar

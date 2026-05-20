@@ -7,13 +7,13 @@ import { useInfiniteScroll } from "@/hooks/useInfiniteScroll.js";
 export default function BusquedaIndex({
     auth,
     query,
-    publicaciones: publicacionesInitial,
+    noticias: noticiasInitial,
     instituciones: institucionesInitial,
     userType,
 }) {
     // Estado para acumular resultados
-    const [publicacionesData, setPublicacionesData] = useState(
-        publicacionesInitial?.data || []
+    const [noticiasData, setnoticiasData] = useState(
+        noticiasInitial?.data || []
     );
     const [institucionesData, setInstitucionesData] = useState(
         institucionesInitial?.data || []
@@ -21,19 +21,19 @@ export default function BusquedaIndex({
 
     // Actualizar cuando cambien los props (por ejemplo, nueva búsqueda)
     useEffect(() => {
-        setPublicacionesData(publicacionesInitial?.data || []);
+        setnoticiasData(noticiasInitial?.data || []);
         setInstitucionesData(institucionesInitial?.data || []);
     }, [query]);
 
-    // Hook para scroll infinito de publicaciones
+    // Hook para scroll infinito de noticias
     const { loaderRef: pubLoaderRef, isLoading: isLoadingPub } =
         useInfiniteScroll({
-            nextPageUrl: publicacionesInitial?.next_page_url,
+            nextPageUrl: noticiasInitial?.next_page_url,
             onLoadMore: () => {
-                // Agregar nuevas publicaciones sin duplicar
-                if (publicacionesInitial?.data) {
-                    setPublicacionesData((prev) => {
-                        const newItems = publicacionesInitial.data.filter(
+                // Agregar nuevas noticias sin duplicar
+                if (noticiasInitial?.data) {
+                    setnoticiasData((prev) => {
+                        const newItems = noticiasInitial.data.filter(
                             (newItem) =>
                                 !prev.some((item) => item.id === newItem.id)
                         );
@@ -61,28 +61,28 @@ export default function BusquedaIndex({
             },
         });
 
-    const handleLike = (publicacionId) => {
+    const handleLike = (noticiaId) => {
         router.post(
             "/likes/toggle",
             {
-                target_id: publicacionId,
-                target_tipo: "publicacion",
+                target_id: noticiaId,
+                target_tipo: "noticia",
             },
             { preserveScroll: true, preserveState: true }
         );
     };
 
-    const handleFavorite = (publicacionId) => {
+    const handleFavorite = (noticiaId) => {
         router.post(
             "/favoritos/toggle",
             {
-                publicacion_id: publicacionId,
+                noticia_id: noticiaId,
             },
             { preserveScroll: true, preserveState: true }
         );
     };
 
-    const totalResultados = publicacionesData.length + institucionesData.length;
+    const totalResultados = noticiasData.length + institucionesData.length;
 
     return (
         <AuthenticatedLayout user={auth.user}>
@@ -184,8 +184,8 @@ export default function BusquedaIndex({
                         </div>
                     ) : (
                         <div className="space-y-8">
-                            {/* Publicaciones */}
-                            {publicacionesData.length > 0 && (
+                            {/* noticias */}
+                            {noticiasData.length > 0 && (
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -204,18 +204,18 @@ export default function BusquedaIndex({
                                             </svg>
                                         </div>
                                         <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
-                                            Publicaciones
+                                            Noticias
                                             <span className="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
-                                                ({publicacionesData.length})
+                                                ({noticiasData.length})
                                             </span>
                                         </h2>
                                     </div>
                                     <div className="space-y-6">
-                                        {publicacionesData.map(
-                                            (publicacion) => (
+                                        {noticiasData.map(
+                                            (noticia) => (
                                                 <PublicacionCard
-                                                    key={publicacion.id}
-                                                    publicacion={publicacion}
+                                                    key={noticia.id}
+                                                    noticia={noticia}
                                                     userType={userType}
                                                     onLike={handleLike}
                                                     onFavorite={handleFavorite}
@@ -224,8 +224,8 @@ export default function BusquedaIndex({
                                         )}
                                     </div>
 
-                                    {/* Loader para scroll infinito de publicaciones */}
-                                    {publicacionesInitial?.next_page_url && (
+                                    {/* Loader para scroll infinito de noticias */}
+                                    {noticiasInitial?.next_page_url && (
                                         <div
                                             ref={pubLoaderRef}
                                             className="flex justify-center py-8"
@@ -254,7 +254,7 @@ export default function BusquedaIndex({
                                                     </svg>
                                                     <p className="text-sm text-gray-600">
                                                         Cargando más
-                                                        publicaciones...
+                                                        noticias...
                                                     </p>
                                                 </div>
                                             )}

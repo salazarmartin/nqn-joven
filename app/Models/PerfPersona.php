@@ -12,11 +12,20 @@ class PerfPersona extends Model
     // Indicar explícitamente el nombre de la tabla
     protected $table = 'perf_persona';
 
-    protected $fillable = ['user_id', 'apellido', 'interests', 'fecha_nac', 'biografia'];
+    protected $fillable = ['user_id', 'apellido', 'interests', 'fecha_nac', 'biografia','region_id','username','dni','trabaja_emprende','estudio_id'];
 
     protected $casts = [
         'interests' => 'array',
     ];
+
+    public function region()
+    {
+        return $this->belongsTo(Region::class);
+    }
+
+    public function estudio(){
+        return $this->belongsTo(Estudio::class);
+    }
 
     public function user()
     {

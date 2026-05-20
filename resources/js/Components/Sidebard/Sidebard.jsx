@@ -118,11 +118,7 @@ export default function Sidebar({ isOpen, onClose, unreadCount }) {
                     <UserProfile />
                     <hr className="mt-2 mb-6 border-gray-300 dark:border-gray-600" />
 
-                    <BotonSidebar
-                        href="/mis-carreras"
-                        icon="/svg/sidebar/book.svg"
-                        label="Carreras"
-                    />
+                    
                     <BotonSidebar
                         href="/favoritos"
                         icon="/svg/sidebar/bookmark.svg"
@@ -134,22 +130,16 @@ export default function Sidebar({ isOpen, onClose, unreadCount }) {
                         label="Ubicaciones Guardadas"
                     />
                     <BotonSidebar
-                        href="/mis-cursos"
-                        icon="/svg/sidebar/courses.svg"
-                        label="Cursos"
+                        href="/notificaciones/explorar/noticias/todas/todas"
+                        icon="/svg/eye-on.svg"
+                        label="Explorar"
                     />
                     <BotonSidebar
                         href={route("actividad.index")}
                         icon="/svg/sidebar/clock.svg"
                         label="Actividad"
                     />
-                    <BotonSidebar
-                        href="/chats"
-                        icon="/svg/sidebar/chat.svg"
-                        label="Chat"
-                        unreadCount={count}
-                    />
-
+                    
                     <hr className="mt-2 mb-6 border-gray-300 dark:border-gray-600" />
 
                     <button
@@ -193,38 +183,24 @@ export default function Sidebar({ isOpen, onClose, unreadCount }) {
                             <UserProfile />
                             <hr className="border-gray-200 dark:border-gray-600" />
 
-                            <BotonSidebar
-                                href="/mis-carreras"
-                                icon="/svg/sidebar/book.svg"
-                                label="Carreras"
-                            />
+                            
                             <BotonSidebar
                                 href="/favoritos"
                                 icon="/svg/sidebar/bookmark.svg"
                                 label="Elementos Guardados"
                             />
+                            
                             <BotonSidebar
-                                href="/ubicaciones"
-                                icon="/svg/sidebar/location.svg"
-                                label="Ubicaciones Guardadas"
-                            />
-                            <BotonSidebar
-                                href="/mis-cursos"
-                                icon="/svg/sidebar/courses.svg"
-                                label="Cursos"
+                                href="/notificaciones/explorar/noticias/todas/todas"
+                                icon="/svg/eye-on.svg"
+                                label="Explorar"
                             />
                             <BotonSidebar
                                 href={route("actividad.index")}
                                 icon="/svg/sidebar/clock.svg"
                                 label="Actividad"
                             />
-                            <BotonSidebar
-                                href="/chats"
-                                icon="/svg/sidebar/chat.svg"
-                                label="Chat"
-                                unreadCount={count}
-                            />
-
+                            
                             <hr className="border-gray-200 dark:border-gray-600" />
 
                             <button

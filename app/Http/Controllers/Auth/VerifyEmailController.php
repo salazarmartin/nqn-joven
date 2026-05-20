@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
+use App\Models\Region;
+use App\Models\Estudio;
 
 class VerifyEmailController extends Controller
 {
@@ -16,11 +18,14 @@ class VerifyEmailController extends Controller
     {
         $user = $request->user();
 
+        $regiones = Region::orderBy('nombre','asc')->get();
+        $estudios = Estudio::orderBy('nombre','asc')->get();
+
         // Si ya verificó el email
         if ($user->hasVerifiedEmail()) {
             // Redirigir según el estado actual
             if ($user->estado === 'pendiente_datos') {
-                return redirect()->route('completar.datos', ['type' => $user->tipo_usuario]);
+                return redirect()->route('completar.datos', ['type' => $user->tipo_usuario, 'regiones' => $regiones, 'estudios'=>$estudios]);
             }
 
             if ($user->estado === 'pendiente_aprobacion') {
@@ -39,7 +44,7 @@ class VerifyEmailController extends Controller
         }
 
         // Redirigir a completar datos
-        return redirect()->route('completar.datos', ['type' => $user->tipo_usuario])
+        return redirect()->route('completar.datos', ['type' => $user->tipo_usuario, 'regiones' => $regiones])
             ->with('success', '¡Email verificado! Ahora completá tus datos.');
     }
 }

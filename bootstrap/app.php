@@ -15,6 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
         web: __DIR__ . '/../routes/web.php',
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
+        then: function () {
+            \Illuminate\Support\Facades\Route::middleware('web')
+                ->group(base_path('routes/admin.php'));
+        },
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
@@ -25,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'check.persona' => \App\Http\Middleware\CheckPersona::class,
             'check.institucion' => \App\Http\Middleware\CheckInstitucion::class,
+            'admin' => \App\Http\Middleware\EnsureIsAdmin::class,
         ]);
         $middleware->use([
             \Illuminate\Http\Middleware\HandleCors::class,

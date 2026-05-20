@@ -1,9 +1,8 @@
 import InputError from "@/Components/InputError";
 import PrimaryButton from "@/Components/PrimaryButton";
 import SecondaryButton from "@/Components/SecondaryButton";
-import { useForm } from "@inertiajs/react";
+import { useForm, router } from "@inertiajs/react";
 import { useRef, useEffect, useState } from "react";
-import { Inertia } from "@inertiajs/inertia";
 import { toast } from "react-hot-toast";
 import { X, Camera, Trash2, Upload } from "lucide-react";
 
@@ -61,7 +60,7 @@ export default function ActualizarFotoPerfil({ currentPhoto, className = "" }) {
                 setPreviewPhoto(null);
                 if (photoInput.current) photoInput.current.value = null;
                 setIsModalOpen(false);
-                Inertia.reload();
+                router.reload();
             },
             onError: () => {
                 toast.dismiss(toastId);
@@ -93,7 +92,7 @@ export default function ActualizarFotoPerfil({ currentPhoto, className = "" }) {
                             const loadingId =
                                 toast.loading("Eliminando foto...");
 
-                            Inertia.delete(route("profile.photo.destroy"), {
+                            router.delete(route("profile.photo.destroy"), {
                                 preserveScroll: true,
                                 onSuccess: () => {
                                     toast.dismiss(loadingId);
@@ -145,7 +144,7 @@ export default function ActualizarFotoPerfil({ currentPhoto, className = "" }) {
             {/* Foto de perfil con ícono de edición */}
             <div className={`relative inline-block ${className}`}>
                 <img
-                    src={displayPhoto || "/storage/profile-photos/default-avatar.webp"}
+                    src={displayPhoto || "/svg/header/perfil.svg"}
                     alt="Foto de perfil"
                     className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-full shadow-lg border-4 border-gray-200"
                 />

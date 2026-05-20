@@ -2,14 +2,14 @@
 
 namespace App\Notifications;
 
-use App\Models\ComentPublicacion;
+use App\Models\ComentNoticia;
 use Illuminate\Notifications\Notification;
 
 class RespuestaComentarioNotification extends Notification
 {
     public $respuesta;
 
-    public function __construct(ComentPublicacion $respuesta)
+    public function __construct(ComentNoticia $respuesta)
     {
         $this->respuesta = $respuesta;
     }
@@ -40,7 +40,7 @@ class RespuestaComentarioNotification extends Notification
 
         return [
             'comentario_id' => $this->respuesta->id,
-            'publicacion_id' => $this->respuesta->publicacion_id,
+            'noticia_id' => $this->respuesta->noticia_id,
             'contenido' => $this->respuesta->contenido,
             'usuario' => $usuarioArray, // <<-- usuario aplanado
             'tipo' => 'respuesta',

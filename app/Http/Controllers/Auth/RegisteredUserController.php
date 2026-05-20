@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Carbon\Carbon;
@@ -31,8 +32,17 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $existe = User::where('email','=',$request->email)->get();
+        if(count($existe)>0){
+            if($existe[0]->deleted_at){
+                
+            }else{
+                return redirect()->route('register');
+            }
+        }
+        
         $request->validate([
-            'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
+            'email' => 'required|string|lowercase|email|max:255',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'tipo_usuario' => 'required|in:persona,institucion'
         ]);
@@ -43,10 +53,10 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
             'tipo_usuario' => $request->tipo_usuario,
             'estado' => 'pendiente_verif',
-            'nombre' => '',
-            'telefono' => '',
-            'ciudad' => '',
-            'provincia' => '',
+            'nombre' => ' ',
+            'telefono' => ' ',
+            'ciudad' => ' ',
+            'provincia' => ' ',
         ]);
 
         event(new Registered($user));
@@ -54,5 +64,18 @@ class RegisteredUserController extends Controller
         Auth::login($user);
 
         return redirect()->route('verification.notice');
+    }
+
+    public function chequearemail($email){
+        
+        $existe = User::where('email','=',$email)->get();
+        if(count($existe)>0){
+            if($existe[0]->deleted_at){
+                return response()->json(['sepuede' => true]);
+            }else{
+                return response()->json(['sepuede' => false]);
+            }
+        }
+        return response()->json(['sepuede' => true]);
     }
 }

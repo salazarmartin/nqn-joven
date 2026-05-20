@@ -9,48 +9,48 @@ import LoadingSpinner from "@/Components/LoadingSpinner";
 export default function Favoritos({ auth, favoritos, userType }) {
     const favoritosData = favoritos?.data || [];
     const favoritosLinks = favoritos?.links || [];
-    const [publicacionesFiltradas, setPublicacionesFiltradas] = useState(null);
+    const [noticiasFiltradas, setnoticiasFiltradas] = useState(null);
 
     const nextPageUrl = favoritosLinks.find(
         (link) => link.label === "&raquo;"
     )?.url;
     const { loaderRef, isLoading } = useInfiniteScroll({
-        nextPageUrl: publicacionesFiltradas === null ? nextPageUrl : null, // Deshabilitar si hay filtro
+        nextPageUrl: noticiasFiltradas === null ? nextPageUrl : null, // Deshabilitar si hay filtro
     });
 
-    const handleLike = (publicacionId) => {
+    const handleLike = (noticiaId) => {
         router.post(
             "/likes/toggle",
             {
-                target_id: publicacionId,
-                target_tipo: "publicacion",
+                target_id: noticiaId,
+                target_tipo: "noticia",
             },
             { preserveScroll: true, preserveState: true }
         );
     };
 
-    const handleFavorite = (publicacionId) => {
+    const handleFavorite = (noticiaId) => {
         router.post(
             "/favoritos/toggle",
             {
-                publicacion_id: publicacionId,
+                noticia_id: noticiaId,
             },
             { preserveScroll: true, preserveState: true }
         );
     };
 
     const handleBusquedaFavoritos = (resultados) => {
-        setPublicacionesFiltradas(resultados);
+        setnoticiasFiltradas(resultados);
     };
 
     const handleLimpiarFiltro = () => {
-        setPublicacionesFiltradas(null);
+        setnoticiasFiltradas(null);
     };
 
-    // Determinar qué publicaciones mostrar
-    const publicacionesAMostrar =
-        publicacionesFiltradas !== null
-            ? publicacionesFiltradas
+    // Determinar qué noticias mostrar
+    const noticiasAMostrar =
+        noticiasFiltradas !== null
+            ? noticiasFiltradas
             : favoritosData;
 
     return (
@@ -60,19 +60,19 @@ export default function Favoritos({ auth, favoritos, userType }) {
             <div className="py-6 mb-8">
                 <div className="max-w-2xl mx-auto sm:px-6 lg:px-8">
                     <div className="mb-8">
-                        
+                        <h1 className="mb-3 text-2xl font-bold text-gray-900 dark:text-white">Favoritos</h1>
                         {/* Barra de búsqueda para favoritos */}
                         <div className="flex justify-center shadow-md border rounded-full">
                             <BarraBusqueda
                                 variant="favoritos"
-                                publicaciones={favoritosData}
+                                noticias={favoritosData}
                                 onBusqueda={handleBusquedaFavoritos}
                             />
                         </div>
                     </div>
 
                     {/* Indicador de filtro activo */}
-                    {publicacionesFiltradas !== null && (
+                    {noticiasFiltradas !== null && (
                         <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <svg
@@ -89,8 +89,8 @@ export default function Favoritos({ auth, favoritos, userType }) {
                                     />
                                 </svg>
                                 <span className="text-blue-800 font-medium text-sm">
-                                    Mostrando {publicacionesAMostrar.length}{" "}
-                                    {publicacionesAMostrar.length === 1
+                                    Mostrando {noticiasAMostrar.length}{" "}
+                                    {noticiasAMostrar.length === 1
                                         ? "resultado"
                                         : "resultados"}
                                 </span>
@@ -117,10 +117,10 @@ export default function Favoritos({ auth, favoritos, userType }) {
                         </div>
                     )}
 
-                    {/* Lista de publicaciones favoritas */}
+                    {/* Lista de noticias favoritas */}
                     <div className="space-y-6">
-                        {publicacionesAMostrar.length === 0 &&
-                        publicacionesFiltradas === null ? (
+                        {noticiasAMostrar.length === 0 &&
+                        noticiasFiltradas === null ? (
                             <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-8 text-center border border-gray-200 dark:border-gray-700">
                                 <svg
                                     className="mx-auto h-12 w-12 text-gray-400 mb-4"
@@ -136,20 +136,20 @@ export default function Favoritos({ auth, favoritos, userType }) {
                                     />
                                 </svg>
                                 <p className="text-gray-500 dark:text-gray-300 text-lg mb-2">
-                                    No tenés publicaciones guardadas todavía.
+                                    No tenés noticias guardadas todavía.
                                 </p>
                                 <p className="text-gray-400 dark:text-gray-400 text-sm mb-4">
-                                    Guardá publicaciones para verlas más tarde
+                                    Guardá noticias para verlas más tarde
                                 </p>
                                 <Link
                                     href="/inicio"
                                     className="mt-3 inline-block px-4 py-2 bg-edu-dark text-white rounded-lg hover:bg-gray-800 font-medium dark:bg-gray-600 dark:hover:bg-gray-700 transition-colors"
                                 >
-                                    Explorar publicaciones
+                                    Explorar noticias
                                 </Link>
                             </div>
-                        ) : publicacionesAMostrar.length === 0 &&
-                          publicacionesFiltradas !== null ? (
+                        ) : noticiasAMostrar.length === 0 &&
+                          noticiasFiltradas !== null ? (
                             <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-8 text-center">
                                 <svg
                                     className="mx-auto h-12 w-12 text-gray-400 mb-4"
@@ -172,12 +172,12 @@ export default function Favoritos({ auth, favoritos, userType }) {
                                 </p>
                             </div>
                         ) : (
-                            publicacionesAMostrar.map((publicacion) => {
-                                if (!publicacion) return null;
+                            noticiasAMostrar.map((noticia) => {
+                                if (!noticia) return null;
                                 return (
                                     <PublicacionCard
-                                        key={publicacion.id}
-                                        publicacion={publicacion}
+                                        key={noticia.id}
+                                        noticia={noticia}
                                         userType={userType}
                                         onLike={handleLike}
                                         onFavorite={handleFavorite}
@@ -188,7 +188,7 @@ export default function Favoritos({ auth, favoritos, userType }) {
                     </div>
 
                     {/* Loader para scroll infinito - solo si no hay filtro activo */}
-                    {publicacionesFiltradas === null && nextPageUrl && (
+                    {noticiasFiltradas === null && nextPageUrl && (
                         <div ref={loaderRef}>
                             {isLoading && <LoadingSpinner />}
                         </div>

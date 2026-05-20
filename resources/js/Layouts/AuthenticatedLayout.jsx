@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Header from "@/Components/Header/Header";
 import Sidebar from "@/Components/Sidebard/Sidebard";
-import Recomendaciones from "@/Components/Recomendaciones";
+
 import { Toaster } from "react-hot-toast";
 import BackButton from "@/Components/BackButton";
 import { usePage, router } from '@inertiajs/react';
@@ -12,7 +12,7 @@ import MobileBottomNav from "@/Components/Header/MobileBottomNav";
 export default function AuthenticatedLayout({ 
     header, 
     children, 
-    showRecomendaciones = true, // por defecto se muestran
+    
     maxWidth = "max-w-4xl" // opciones: "max-w-3xl", "max-w-4xl", "max-w-5xl", "max-w-6xl", "max-w-7xl", "w-full"
 }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -105,12 +105,7 @@ export default function AuthenticatedLayout({
                     </div>
                 </main>
 
-                {/* Sidebar derecho - recomendaciones con condicional */}
-                {showRecomendaciones && (
-                    <aside className="hidden lg:block w-80 flex-shrink-0 mr-12 p-4 h-[calc(100vh-64px)] sticky top-16 overflow-y-auto">
-                        <Recomendaciones userType={userType} />
-                    </aside>
-                )}
+                
             </div>
 
             {/* Navegación móvil inferior */}

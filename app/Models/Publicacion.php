@@ -29,6 +29,16 @@ class Publicacion extends Model
     {
         return $this->belongsTo(PerfInstitucion::class, 'perf_institucion_id');
     }
+    
+    public function region()
+    {
+        return $this->belongsTo(Region::class);
+    }
+
+    public function categoria()
+    {
+        return $this->belongsTo(Categoria::class);
+    }
 
     public function comentarios()
     {

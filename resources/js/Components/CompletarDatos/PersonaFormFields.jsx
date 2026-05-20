@@ -1,8 +1,11 @@
 import InputLabel from "@/Components/InputLabel";
+import SelectInput from "@/Components/SelectInput";
 import TextInput from "@/Components/TextInput";
 import InputError from "@/Components/InputError";
 
 export default function PersonaFormFields({
+    regiones,
+    estudios,
     data,
     errors,
     clientErrors,
@@ -10,6 +13,7 @@ export default function PersonaFormFields({
     onFieldValidation,
     clearFieldError,
 }) {
+    
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -129,6 +133,25 @@ export default function PersonaFormFields({
                 )}
             </div>
 
+            <div className="max-w-full">
+                <InputLabel className="block font-medium mb-1 dark:text-gray-300">
+                    Región *
+                </InputLabel>
+                <SelectInput
+                    options={regiones}
+                    value={data.region_id}
+                    onChange={(e) => onDataChange("region_id", e.target.value)}
+                    onBlur={(e) => onFieldValidation("region_id", e.target.value)}
+                />
+                
+                {(clientErrors.region_id || errors.region_id) && (
+                    <InputError
+                        message={clientErrors.region_id || errors.region_id}
+                        className="mt-1"
+                    />
+                )}
+            </div>
+
             <div>
                 <InputLabel className="block font-medium mb-1 dark:text-gray-300">
                     Fecha de nacimiento *
@@ -152,6 +175,99 @@ export default function PersonaFormFields({
                     />
                 )}
             </div>
+
+            <div>
+                <InputLabel className="block font-medium mb-1 dark:text-gray-300">
+                    DNI *
+                </InputLabel>
+                <TextInput
+                    type="number"
+                    value={data.dni}
+                    onChange={(e) => {
+                        onDataChange("dni", e.target.value);
+                        clearFieldError("dni");
+                    }}
+                    onBlur={(e) => onFieldValidation("dni", e.target.value)}
+                    className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 px-3 py-2 rounded-lg focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400"
+                />
+                {(clientErrors.dni || errors.dni) && (
+                    <InputError
+                        message={clientErrors.dni || errors.dni}
+                        className="mt-1"
+                    />
+                )}
+            </div>
+
+            <div>
+                <InputLabel className="block font-medium mb-1 dark:text-gray-300">
+                    Username *
+                </InputLabel>
+                <TextInput
+                    type="text"
+                    value={data.username}
+                    onChange={(e) => {
+                        onDataChange("username", e.target.value);
+                        clearFieldError("username");
+                    }}
+                    onBlur={(e) => onFieldValidation("username", e.target.value)}
+                    className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 px-3 py-2 rounded-lg focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400"
+                />
+                {(clientErrors.username || errors.username) && (
+                    <InputError
+                        message={clientErrors.username || errors.username}
+                        className="mt-1"
+                    />
+                )}
+            </div>
+
+            <div>
+                <InputLabel className="block font-medium mb-1 dark:text-gray-300">
+                    Trabaja/Emprende *
+                </InputLabel>
+                <select
+                    value={data.trabaja_emprende}
+                    onChange={(e) => {
+                        onDataChange("trabaja_emprende", e.target.value);
+                        clearFieldError("trabaja_emprende");
+                    }}
+                    onBlur={(e) =>
+                        onFieldValidation("trabaja_emprende", e.target.value)
+                    }
+                    className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 px-3 py-2 rounded-lg focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400"
+                >
+                    <option value="">Seleccione...</option>
+                    <option value="No">No</option>
+                    <option value="Trabaja">Trabaja</option>
+                    <option value="Emprende">Emprende</option>
+                    <option value="Ambos">Ambos</option>
+                </select>
+                {(clientErrors.trabaja_emprende || errors.trabaja_emprende) && (
+                    <InputError
+                        message={clientErrors.trabaja_emprende || errors.trabaja_emprende}
+                        className="mt-1"
+                    />
+                )}
+            </div>
+            
+            <div className="max-w-full">
+                <InputLabel className="block font-medium mb-1 dark:text-gray-300">
+                    Estudios *
+                </InputLabel>
+                <SelectInput
+                    options={estudios}
+                    value={data.estudio_id}
+                    onChange={(e) => onDataChange("estudio_id", e.target.value)}
+                    onBlur={(e) => onFieldValidation("estudio_id", e.target.value)}
+                />
+                
+                {(clientErrors.estudio_id || errors.estudio_id) && (
+                    <InputError
+                        message={clientErrors.estudio_id || errors.estudio_id}
+                        className="mt-1"
+                    />
+                )}
+            </div>
+
         </div>
     );
 }

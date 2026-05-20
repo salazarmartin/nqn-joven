@@ -23,7 +23,7 @@ return new class extends Migration
             $table->decimal('latitud', 10, 7)->nullable();
             $table->decimal('longitud', 10, 7)->nullable();
             $table->boolean('verificado')->default(false);
-            $table->year('ano_fundacion')->nullable();
+            $table->integer('ano_fundacion')->nullable();
             
             $table->timestamps();
         });

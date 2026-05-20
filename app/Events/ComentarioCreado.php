@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use App\Models\ComentPublicacion;
+use App\Models\ComentNoticia;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -17,17 +17,17 @@ class ComentarioCreado implements ShouldBroadcast
     public $comentario;
     public $receptorId;
 
-    public function __construct(ComentPublicacion $comentario)
+    public function __construct(ComentNoticia $comentario)
     {
         $this->comentario = $comentario;
 
         // Siempre hay una institución propietaria de la publicación
-        $this->receptorId = $comentario->publicacion->institucion->user->id;
+        $this->receptorId = $comentario->noticia->institucion->user->id;
 
          $usuarioQueComento = $comentario->persona->user ?? $comentario->institucion->user;
     
         if ($usuarioQueComento && $usuarioQueComento->id !== $this->receptorId) {
-            $receptor = $comentario->publicacion->institucion->user;
+            $receptor = $comentario->noticia->institucion->user;
             $receptor->notify(new ComentarioCreadoNotification($comentario));
         }
     }
@@ -65,7 +65,7 @@ class ComentarioCreado implements ShouldBroadcast
             'comentario' => [
                 'id' => $this->comentario->id,
                 'contenido' => $this->comentario->contenido,
-                'publicacion_id' => $this->comentario->publicacion_id,
+                'noticia_id' => $this->comentario->noticia_id,
 
                 'usuario' => [
                     'id' => $usuario->id ?? null,

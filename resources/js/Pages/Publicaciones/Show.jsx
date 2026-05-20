@@ -14,18 +14,22 @@ import ComentarioItem from "@/Components/Publicacion/ComentarioItem";
 import toast from "react-hot-toast";
 import axios from "axios";
 
-export default function Show({ auth, publicacion, userType }) {
-    const [isLiked, setIsLiked] = useState(publicacion.user_has_liked);
-    const [likesCount, setLikesCount] = useState(publicacion.likes_count);
-    const [isFavorite, setIsFavorite] = useState(publicacion.is_favorite);
+export default function Show({ auth, noticia, userType }) {
+    const [isLiked, setIsLiked] = useState(noticia.user_has_liked);
+    const [likesCount, setLikesCount] = useState(noticia.likes_count);
+    const [isFavorite, setIsFavorite] = useState(noticia.is_favorite);
     const [comentarioText, setComentarioText] = useState("");
-    const [comentarios, setComentarios] = useState(publicacion.comentarios);
+    const [comentarios, setComentarios] = useState(noticia.comentarios);
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const [showFullscreen, setShowFullscreen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
 
-    const media = publicacion.media || [];
+    const media = noticia.media || [];
+    // Para novedades admin: imagen de portada directa (sin media[])
+    const imagenPortada = media.length === 0 && noticia.imagen
+        ? `/storage/${noticia.imagen}`
+        : null;
 
     const handleLike = async () => {
         const previousLiked = isLiked;
@@ -36,8 +40,8 @@ export default function Show({ auth, publicacion, userType }) {
 
         try {
             const response = await axios.post("/likes/toggle", {
-                target_id: publicacion.id,
-                target_tipo: "publicacion",
+                target_id: noticia.id,
+                target_tipo: "noticia",
             });
 
             if (response.data.success) {
@@ -66,7 +70,7 @@ export default function Show({ auth, publicacion, userType }) {
 
         try {
             const res = await axios.post("/favoritos/toggle", {
-                publicacion_id: publicacion.id,
+                noticia_id: noticia.id,
             });
 
             if (!res.data.success) {
@@ -89,7 +93,7 @@ export default function Show({ auth, publicacion, userType }) {
 
         try {
             const response = await axios.post("/comentarios", {
-                publicacion_id: publicacion.id,
+                noticia_id: noticia.id,
                 contenido: comentarioText,
             });
 
@@ -102,7 +106,7 @@ export default function Show({ auth, publicacion, userType }) {
 
                 // Recargar
                 router.reload({
-                    only: ["publicacion"],
+                    only: ["noticia"],
                     preserveScroll: true,
                 });
             }
@@ -162,87 +166,59 @@ export default function Show({ auth, publicacion, userType }) {
     const canComment = true;
     const isOwner =
         userType === "institucion" &&
-        auth.user.institucion?.id === publicacion.perf_institucion_id;
+        auth.user.institucion?.id === noticia.perf_institucion_id;
 
     return (
         <AuthenticatedLayout user={auth.user}>
-            <Head title={publicacion.titulo} />
+            <Head title={noticia.titulo} />
 
-            <div className="py-8">
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-                    {media.length > 0 ? (
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            {/* IZQUIERDA - Slider */}
-                            <div className="bg-white rounded-3xl border border-gray-700 overflow-hidden h-[450px]">
-                                <div className="relative bg-black h-full flex items-center justify-center">
-                                    <MediaSlide
-                                        media={media[currentMediaIndex]}
-                                        onFullscreen={() =>
-                                            setShowFullscreen(true)
-                                        }
-                                    />
+            <div className="py-6">
+                <div className="max-w-3xl mx-auto px-4 sm:px-6">
 
-                                    {media.length > 1 && (
-                                        <>
-                                            <button
-                                                onClick={prevMedia}
-                                                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition z-10"
-                                            >
-                                                <ChevronLeft className="w-6 h-6" />
-                                            </button>
-                                            <button
-                                                onClick={nextMedia}
-                                                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition z-10"
-                                            >
-                                                <ChevronRight className="w-6 h-6" />
-                                            </button>
-
-                                            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
-                                                {media.map((_, index) => (
-                                                    <button
-                                                        key={index}
-                                                        onClick={() =>
-                                                            setCurrentMediaIndex(
-                                                                index
-                                                            )
-                                                        }
-                                                        className={`w-2 h-2 rounded-full transition ${
-                                                            index ===
-                                                            currentMediaIndex
-                                                                ? "bg-white w-5"
-                                                                : "bg-white/40"
-                                                        }`}
-                                                    />
-                                                ))}
-                                            </div>
-
-                                            <div className="absolute top-3 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-xs z-10">
-                                                {currentMediaIndex + 1} /{" "}
-                                                {media.length}
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* DERECHA - info */}
-                            <PublicacionInfo
-                                publicacion={publicacion}
-                                comentarios={comentarios}
-                                isLiked={isLiked}
-                                likesCount={likesCount}
-                                isFavorite={isFavorite}
-                                handleLike={handleLike}
-                                handleFavorite={handleFavorite}
-                                canLike={canLike}
-                                canFavorite={canFavorite}
+                    {/* Imagen de portada (novedades admin) */}
+                    {imagenPortada && (
+                        <div className="rounded-2xl overflow-hidden mb-5 shadow-md">
+                            <img
+                                src={imagenPortada}
+                                alt={noticia.titulo}
+                                className="w-full max-h-80 object-cover"
                             />
+                        </div>
+                    )}
+
+                    {/* Slider de media (publicaciones instituciones) */}
+                    {(media.length > 0)?  (
+                        <div className="rounded-2xl overflow-hidden mb-5 shadow-md bg-black h-72 sm:h-96 relative">
+                            <MediaSlide
+                                media={media[currentMediaIndex]}
+                                onFullscreen={() => setShowFullscreen(true)}
+                            />
+                            {media.length > 1 && (
+                                <>
+                                    <button onClick={prevMedia} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full z-10">
+                                        <ChevronLeft className="w-5 h-5" />
+                                    </button>
+                                    <button onClick={nextMedia} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full z-10">
+                                        <ChevronRight className="w-5 h-5" />
+                                    </button>
+                                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                                        {media.map((_, i) => (
+                                            <button key={i} onClick={() => setCurrentMediaIndex(i)}
+                                                className={`h-1.5 rounded-full transition-all ${i === currentMediaIndex ? "w-5 bg-white" : "w-1.5 bg-white/40"}`}
+                                            />
+                                        ))}
+                                    </div>
+                                    <div className="absolute top-3 right-3 bg-black/60 text-white px-2.5 py-1 rounded-full text-xs z-10">
+                                        {currentMediaIndex + 1} / {media.length}
+                                    </div>
+                                </>
+                            )}
                         </div>
                     ) : (
                         <div className="flex justify-center">
                             <div className="w-full max-w-6xl">
                                 <PublicacionInfo
-                                    publicacion={publicacion}
+                                    noticia={noticia}
                                     comentarios={comentarios}
                                     isLiked={isLiked}
                                     likesCount={likesCount}
@@ -339,8 +315,8 @@ export default function Show({ auth, publicacion, userType }) {
                                                 ? auth.user.persona?.id
                                                 : auth.user.institucion?.id
                                         }
-                                        publicacionInstitucionId={
-                                            publicacion.perf_institucion_id
+                                        noticiaInstitucionId={
+                                            noticia.perf_institucion_id
                                         }
                                     />
                                 ))
@@ -365,7 +341,7 @@ export default function Show({ auth, publicacion, userType }) {
 /* ----------------------------- COMPONENTES ----------------------------- */
 
 function PublicacionInfo({
-    publicacion,
+    noticia,
     comentarios,
     isLiked,
     likesCount,
@@ -375,55 +351,99 @@ function PublicacionInfo({
     canLike,
     canFavorite,
 }) {
+    const esNovedad = !noticia.perf_institucion_id && noticia.admin_id;
+    const autorNombre = esNovedad
+        ? "NQN Joven"
+        : noticia.institucion?.user?.nombre;
+    const autorFoto = esNovedad
+        ? "/images/logo-nqnjoven.png"
+        : noticia.institucion?.user?.profile_photo_url;
+    const fecha = new Date(noticia.created_at).toLocaleDateString("es-AR", {
+        year: "numeric", month: "long", day: "numeric",
+    });
+
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700 p-6 flex flex-col justify-between h-full transition-colors">
-            <div>
-                <div className="flex items-center space-x-3 mb-4">
-                    <img
-                        src={publicacion.institucion?.user?.profile_photo_url}
-                        alt={publicacion.institucion?.user?.nombre}
-                        className="w-14 h-14 rounded-full object-cover"
-                    />
-                    <div>
-                        <h3 className="font-bold text-gray-900 dark:text-white text-lg">
-                            {publicacion.institucion?.user?.nombre}
-                        </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {new Date(
-                                publicacion.created_at
-                            ).toLocaleDateString("es-AR", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                            })}
-                        </p>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden shadow-sm mb-5">
+            {/* Autor */}
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+                <img
+                    src={autorFoto}
+                    alt={autorNombre}
+                    className="w-11 h-11 rounded-full object-cover flex-shrink-0 bg-gray-100"
+                    onError={(e) => { e.onerror = null; e.target.src = "/svg/header/perfil.svg"; }}
+                />
+                <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold text-gray-900 dark:text-white text-sm">
+                            {autorNombre}
+                        </span>
+                        {esNovedad && (
+                            <span className="px-2 py-0.5 bg-[#23025d] text-white text-xs rounded-full font-medium">
+                                Novedad oficial
+                            </span>
+                        )}
                     </div>
-                </div>
-
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                    {publicacion.titulo}
-                </h1>
-
-                <div className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed mb-4 max-h-[240px] overflow-y-auto pr-2 custom-scroll">
-                    {publicacion.contenido}
+                    <p className="text-xs text-gray-400 mt-0.5">{fecha}</p>
                 </div>
             </div>
 
-            <PublicacionActions
-                isLiked={isLiked}
-                likesCount={likesCount}
-                onLike={handleLike}
-                canLike={canLike}
-                comentariosCount={comentarios.length}
-                isFavorite={isFavorite}
-                onFavorite={handleFavorite}
-                canFavorite={canFavorite}
-                publicacionId={publicacion.id}
-                layout="spaced"
-                size="default"
-            />
+            {/* Título y contenido */}
+            <div className="px-5 py-5">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4 leading-snug">
+                    {noticia.titulo}
+                </h1>
+
+                {/* Resumen destacado si existe */}
+                {noticia.resumen && (
+                    <p className="text-base text-gray-600 dark:text-gray-300 font-medium mb-4 pb-4 border-b border-gray-100 dark:border-gray-700 leading-relaxed">
+                        {noticia.resumen}
+                    </p>
+                )}
+
+                <div className="text-gray-700 dark:text-gray-300 leading-relaxed text-[15px] whitespace-pre-wrap">
+                    {noticia.contenido}
+                </div>
+
+                {/* Link externo */}
+                {noticia.link_externo && (
+                    <a
+                        href={noticia.link_externo}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-[#23025d] text-white rounded-lg text-sm font-medium hover:bg-[#3a0499] transition-colors"
+                    >
+                        Ver más →
+                    </a>
+                )}
+
+                {/* Categorías */}
+                {noticia.categorias?.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-5 pt-4 border-t border-gray-100 dark:border-gray-700">
+                        {noticia.categorias.map((cat, i) => (
+                            <span key={i} className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full text-xs font-medium">
+                                {cat}
+                            </span>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Acciones */}
+            <div className="px-5 py-3 border-t border-gray-100 dark:border-gray-700">
+                <PublicacionActions
+                    isLiked={isLiked}
+                    likesCount={likesCount}
+                    onLike={handleLike}
+                    canLike={canLike}
+                    comentariosCount={comentarios.length}
+                    isFavorite={isFavorite}
+                    onFavorite={handleFavorite}
+                    canFavorite={canFavorite}
+                    noticiaId={noticia.id}
+                    layout="spaced"
+                    size="default"
+                />
+            </div>
         </div>
     );
 }

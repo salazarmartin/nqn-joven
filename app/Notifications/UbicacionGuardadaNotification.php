@@ -2,7 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Models\Publicacion;
+use App\Models\Noticia;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\BroadcastMessage;
@@ -11,11 +11,11 @@ class UbicacionGuardadaNotification extends Notification
 {
     use Queueable;
 
-    public $publicacion;
+    public $noticia;
 
-    public function __construct(Publicacion $publicacion)
+    public function __construct(Noticia $noticia)
     {
-        $this->publicacion = $publicacion;
+        $this->noticia = $noticia;
     }
 
     public function via($notifiable)
@@ -27,16 +27,16 @@ class UbicacionGuardadaNotification extends Notification
     public function toDatabase($notifiable)
     {
         return [
-            'tipo' => 'publicacion',
-            'mensaje' => " ha publicado: {$this->publicacion->titulo}",
-            'institucion_id' => $this->publicacion->institucion->id,
-            'publicacion_id' => $this->publicacion->id,
+            'tipo' => 'noticia',
+            'mensaje' => " ha publicado: {$this->noticia->titulo}",
+            'institucion_id' => $this->noticia->institucion->id,
+            'noticia_id' => $this->noticia->id,
             'usuario' => [
-                'id' => $this->publicacion->institucion->user->id ?? null,
-                'nombre' => $this->publicacion->institucion->nombre ?? 'Institución',
+                'id' => $this->noticia->institucion->user->id ?? null,
+                'nombre' => $this->noticia->institucion->nombre ?? 'Institución',
                 // usar el mismo nombre de archivo por defecto que espera el frontend
-                'foto' => $this->publicacion->institucion->foto_perfil
-                    ? asset('storage/' . $this->publicacion->institucion->foto_perfil)
+                'foto' => $this->noticia->institucion->foto_perfil
+                    ? asset('storage/' . $this->noticia->institucion->foto_perfil)
                     : '/storage/profile-photos/default-avatar.webp',
             ],
             'created_at' => now()->toDateTimeString(),

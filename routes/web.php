@@ -7,11 +7,12 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\InstitucionAprobacionController;
 use App\Http\Controllers\ResidenciaController;
 
-use App\Http\Controllers\Publicaciones\PublicacionController;
+use App\Http\Controllers\Publicaciones\NoticiaController;
 use App\Http\Controllers\Publicaciones\LikeController;
 use App\Http\Controllers\Publicaciones\FavoritoController;
 use App\Http\Controllers\Publicaciones\ComentarioController;
 use App\Http\Controllers\Chats\ChatController;
+use App\Http\Controllers\EventoController;
 use App\Http\Controllers\InstitucionController;
 use App\Http\Controllers\InstitucionMaterialController;
 use App\Http\Controllers\BusquedaController;
@@ -97,29 +98,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('profile.institucion.update');
 
     // feed principal (inicio)
-    Route::get('/inicio', [PublicacionController::class, 'index'])->name('inicio');
+    Route::get('/inicio', [NoticiaController::class, 'index'])->name('inicio');
 
     // rutas solo para instituciones
     Route::middleware(['check.institucion'])->group(function () {
-        Route::get('/publicaciones/create', [PublicacionController::class, 'create'])
-            ->name('publicaciones.create');
-        Route::get('/publicaciones/misPublicaciones', [PublicacionController::class, 'misPublicaciones'])
-            ->name('publicaciones.misPublicaciones');
-        Route::post('/publicaciones', [PublicacionController::class, 'store'])
-            ->name('publicaciones.store');
-        Route::get('/publicaciones/{id}/edit', [PublicacionController::class, 'edit'])
-            ->name('publicaciones.edit');
-        Route::post('/publicaciones/{id}', [PublicacionController::class, 'update'])
-            ->name('publicaciones.update');
-        Route::delete('/publicaciones/{id}', [PublicacionController::class, 'destroy'])
-            ->name('publicaciones.destroy');
+        Route::get('/noticias/create', [NoticiaController::class, 'create'])
+            ->name('noticias.create');
+        Route::get('/noticias/misPublicaciones', [NoticiaController::class, 'misPublicaciones'])
+            ->name('noticias.misPublicaciones');
+        Route::post('/noticias', [NoticiaController::class, 'store'])
+            ->name('noticias.store');
+        Route::get('/noticias/{id}/edit', [NoticiaController::class, 'edit'])
+            ->name('noticias.edit');
+        Route::post('/noticias/{id}', [NoticiaController::class, 'update'])
+            ->name('noticias.update');
+        Route::delete('/noticias/{id}', [NoticiaController::class, 'destroy'])
+            ->name('noticias.destroy');
     });
 
     // ver perf instituciones
     Route::get('/instituciones/{id}', [InstitucionController::class, 'show'])->name('instituciones.show');
 
-    // publicaciones
-    Route::get('/publicaciones/{id}', [PublicacionController::class, 'show'])->name('publicaciones.show');
+    // noticias
+    Route::get('/noticias/{id}', [NoticiaController::class, 'show'])->name('noticias.show');
+
+    // eventos
+    Route::get('/eventos/{id}', [EventoController::class, 'show'])->name('eventos.show');
 
     // likes
     Route::post('/likes/toggle', [LikeController::class, 'toggle'])->name('likes.toggle');
@@ -254,6 +258,18 @@ Route::get('/chats', [ChatController::class, 'index'])
 
 Route::post('/notificaciones/marcar-leidas', [NotificacionController::class, 'marcarLeidas'])
     ->name('notificaciones.marcar-leidas')
+    ->middleware('auth');
+
+    Route::get('/notificaciones/todas', [NotificacionController::class, 'todas'])
+    ->name('notificaciones.todas')
+    ->middleware('auth');
+
+    Route::get('/notificaciones/explorar/{buscar}/{cat}/{reg}', [NotificacionController::class, 'explorar'])
+    ->name('notificaciones.explorar')
+    ->middleware('auth');
+
+    Route::get('/notificaciones/buscarnoticias/{buscar}/{cat}/{reg}', [NotificacionController::class, 'buscarnoticias'])
+    ->name('notificaciones.buscarnoticias')
     ->middleware('auth');
 
     //ubicaciones guardadas

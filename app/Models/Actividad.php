@@ -34,8 +34,8 @@ class Actividad extends Model
     public function getObjetoAttribute()
     {
         switch ($this->modelo) {
-            case 'publicacion':
-                return Publicacion::with(['institucion.user'])->find($this->modelo_id);
+            case 'noticia':
+                return Noticia::with(['institucion.user'])->find($this->modelo_id);
             case 'material':
                 return InstitucionMaterial::with(['institucion.user'])->find($this->modelo_id);
             case 'institucion':

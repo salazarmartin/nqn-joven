@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Publicacion;
+use App\Models\Noticia;
 use App\Models\PerfInstitucion;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
@@ -21,13 +21,13 @@ class BusquedaController extends Controller
 
             if (strlen($query) < 2) {
                 return response()->json([
-                    'publicaciones' => [],
+                    'noticias' => [],
                     'instituciones' => []
                 ]);
             }
 
-            // Buscar publicaciones
-            $publicaciones = Publicacion::query()
+            // Buscar noticias
+            $noticias = Noticia::query()
                 ->where(function ($q) use ($query) {
                     $q->where('titulo', 'LIKE', "%{$query}%")
                         ->orWhere('contenido', 'LIKE', "%{$query}%");
@@ -66,7 +66,7 @@ class BusquedaController extends Controller
                 });
 
             return response()->json([
-                'publicaciones' => $publicaciones,
+                'noticias' => $noticias,
                 'instituciones' => $instituciones
             ]);
         } catch (\Exception $e) {
@@ -85,12 +85,12 @@ class BusquedaController extends Controller
     {
         $query = $request->input('q', '');
 
-        $publicaciones = [];
+        $noticias = [];
         $instituciones = [];
 
         if (strlen($query) >= 2) {
-            // Buscar publicaciones con paginacion
-            $publicaciones = Publicacion::query()
+            // Buscar noticias con paginacion
+            $noticias = Noticia::query()
                 ->where(function ($q) use ($query) {
                     $q->where('titulo', 'LIKE', "%{$query}%")
                         ->orWhere('contenido', 'LIKE', "%{$query}%");
@@ -129,7 +129,7 @@ class BusquedaController extends Controller
 
         return Inertia::render('Busqueda/Index', [
             'query' => $query,
-            'publicaciones' => $publicaciones,
+            'noticias' => $noticias,
             'instituciones' => $instituciones,
             'userType' => Auth::user()
         ]);

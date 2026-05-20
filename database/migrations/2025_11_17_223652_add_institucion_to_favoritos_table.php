@@ -25,8 +25,8 @@ return new class extends Migration
             $table->unsignedBigInteger('perf_persona_id')->nullable()->change();
 
             // Agregar índice compuesto para búsquedas más rápidas
-            $table->index(['perf_persona_id', 'publicacion_id']);
-            $table->index(['perf_institucion_id', 'publicacion_id']);
+            $table->index(['perf_persona_id', 'noticia_id']);
+            $table->index(['perf_institucion_id', 'noticia_id']);
         });
     }
 
@@ -37,8 +37,8 @@ return new class extends Migration
     {
         Schema::table('favoritos', function (Blueprint $table) {
             $table->dropForeign(['perf_institucion_id']);
-            $table->dropIndex(['perf_persona_id', 'publicacion_id']);
-            $table->dropIndex(['perf_institucion_id', 'publicacion_id']);
+            $table->dropIndex(['perf_persona_id', 'noticia_id']);
+            $table->dropIndex(['perf_institucion_id', 'noticia_id']);
             $table->dropColumn('perf_institucion_id');
         });
     }

@@ -16,7 +16,7 @@ import { router } from "@inertiajs/react";
 import axios from "axios";
 import toast from "react-hot-toast";
 
-export default function MediaFullscreenMobile({ publicacion, onClose }) {
+export default function MediaFullscreenMobile({ noticia, onClose }) {
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(true);
     const [currentTime, setCurrentTime] = useState(0);
@@ -24,17 +24,17 @@ export default function MediaFullscreenMobile({ publicacion, onClose }) {
     const [volume, setVolume] = useState(1);
     const [isMuted, setIsMuted] = useState(false);
     const [showVolumeSlider, setShowVolumeSlider] = useState(false);
-    const [isLiked, setIsLiked] = useState(publicacion.user_has_liked);
+    const [isLiked, setIsLiked] = useState(noticia.user_has_liked);
     const [likesCount, setLikesCount] = useState(
-        Number(publicacion.likes_count) || 0
+        Number(noticia.likes_count) || 0
     );
-    const [isFavorite, setIsFavorite] = useState(publicacion.is_favorite);
+    const [isFavorite, setIsFavorite] = useState(noticia.is_favorite);
     const videoRef = useRef(null);
     const volumeTimeoutRef = useRef(null);
 
-    const media = publicacion.media || [];
+    const media = noticia.media || [];
     const currentMedia = media[currentMediaIndex];
-    const comentariosCount = publicacion.comentarios_count || 0;
+    const comentariosCount = noticia.comentarios_count || 0;
 
     useEffect(() => {
         document.body.style.overflow = "hidden";
@@ -60,8 +60,8 @@ export default function MediaFullscreenMobile({ publicacion, onClose }) {
         };
     }, []);
 
-    const handleGoToPublicacion = () => {
-        router.visit(`/publicaciones/${publicacion.id}`);
+    const handleGoTonoticia = () => {
+        router.visit(`/noticias/${noticia.id}`);
     };
 
     const handleLike = async () => {
@@ -73,8 +73,8 @@ export default function MediaFullscreenMobile({ publicacion, onClose }) {
 
         try {
             const res = await axios.post("/likes/toggle", {
-                target_id: publicacion.id,
-                target_tipo: "publicacion",
+                target_id: noticia.id,
+                target_tipo: "noticia",
             });
 
             if (!res.data.success) {
@@ -95,7 +95,7 @@ export default function MediaFullscreenMobile({ publicacion, onClose }) {
 
         try {
             const res = await axios.post("/favoritos/toggle", {
-                publicacion_id: publicacion.id,
+                noticia_id: noticia.id,
             });
 
             if (!res.data.success) {
@@ -109,13 +109,13 @@ export default function MediaFullscreenMobile({ publicacion, onClose }) {
     };
 
     const handleShare = async () => {
-        const url = `${window.location.origin}/publicaciones/${publicacion.id}`;
+        const url = `${window.location.origin}/noticias/${noticia.id}`;
 
         if (navigator.share) {
             try {
                 await navigator.share({
-                    title: publicacion.titulo,
-                    text: publicacion.contenido.substring(0, 100) + "...",
+                    title: noticia.titulo,
+                    text: noticia.contenido.substring(0, 100) + "...",
                     url: url,
                 });
             } catch (error) {
@@ -251,8 +251,8 @@ export default function MediaFullscreenMobile({ publicacion, onClose }) {
 
                     <button
                         className="bg-white/15 hover:bg-white/20 text-white p-3 rounded-full transition backdrop-blur-sm active:scale-95"
-                        onClick={handleGoToPublicacion}
-                        aria-label="Ir a publicación"
+                        onClick={handleGoTonoticia}
+                        aria-label="Ir a noticia"
                     >
                         <ArrowRight className="w-6 h-6" />
                     </button>
@@ -473,7 +473,7 @@ export default function MediaFullscreenMobile({ publicacion, onClose }) {
 
                         {/* Comentarios */}
                         <button
-                            onClick={handleGoToPublicacion}
+                            onClick={handleGoTonoticia}
                             className="flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-gray-700 active:scale-95 transition group"
                         >
                             <div className="p-2 rounded-full group-hover:bg-gray-700/10 transition">

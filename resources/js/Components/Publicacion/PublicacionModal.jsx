@@ -17,20 +17,20 @@ import toast from "react-hot-toast";
 import axios from "axios";
 
 export default function PublicacionModal({
-    publicacion,
+    noticia,
     userType,
     auth,
     onClose,
 }) {
-    const [isLiked, setIsLiked] = useState(publicacion.user_has_liked);
+    const [isLiked, setIsLiked] = useState(noticia.user_has_liked);
     const [likesCount, setLikesCount] = useState(
-        Number(publicacion.likes_count) || 0
+        Number(noticia.likes_count) || 0
     );
-    const [isFavorite, setIsFavorite] = useState(publicacion.is_favorite);
+    const [isFavorite, setIsFavorite] = useState(noticia.is_favorite);
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const [comentario, setComentario] = useState("");
     const [comentarios, setComentarios] = useState(
-        publicacion.comentarios || []
+        noticia.comentarios || []
     );
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
@@ -42,7 +42,7 @@ export default function PublicacionModal({
     const modalRef = useRef(null);
     const videoRef = useRef(null);
 
-    const media = publicacion.media || [];
+    const media = noticia.media || [];
     const currentMedia = media[currentMediaIndex];
 
     // Obtener el ID del usuario actual según el tipo
@@ -81,8 +81,8 @@ export default function PublicacionModal({
 
         try {
             const res = await axios.post("/likes/toggle", {
-                target_id: publicacion.id,
-                target_tipo: "publicacion",
+                target_id: noticia.id,
+                target_tipo: "noticia",
             });
 
             if (!res.data.success) {
@@ -103,7 +103,7 @@ export default function PublicacionModal({
 
         try {
             const res = await axios.post("/favoritos/toggle", {
-                publicacion_id: publicacion.id,
+                noticia_id: noticia.id,
             });
 
             if (!res.data.success) {
@@ -126,7 +126,7 @@ export default function PublicacionModal({
 
         try {
             const response = await axios.post("/comentarios", {
-                publicacion_id: publicacion.id,
+                noticia_id: noticia.id,
                 contenido: comentario,
             });
 
@@ -140,7 +140,7 @@ export default function PublicacionModal({
 
                 // Recargar para obtener los datos actualizados
                 router.reload({
-                    only: ["publicacion"],
+                    only: ["noticia"],
                     preserveScroll: true,
                 });
             }
@@ -278,7 +278,7 @@ export default function PublicacionModal({
                                 {currentMedia?.tipo === "imagen" && (
                                     <img
                                         src={currentMedia.url_publica}
-                                        alt={publicacion.titulo}
+                                        alt={noticia.titulo}
                                         className="max-w-full max-h-full object-contain"
                                     />
                                 )}
@@ -456,25 +456,25 @@ export default function PublicacionModal({
                     {/* Header con botón cerrar */}
                     <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                         <Link
-                            href={`/instituciones/${publicacion.institucion.id}`}
+                            href={`/instituciones/${noticia.institucion.id}`}
                             className="flex items-center gap-3 flex-1"
                         >
                             <img
                                 src={
-                                    publicacion.institucion?.user
+                                    noticia.institucion?.user
                                         ?.profile_photo_url ||
                                     "/profile-photos/default-avatar.webp"
                                 }
-                                alt={publicacion.institucion?.user?.nombre}
+                                alt={noticia.institucion?.user?.nombre}
                                 className="w-14 h-14 rounded-full object-cover"
                             />
                             <div>
                                 <h3 className="font-bold text-gray-900 dark:text-white text-lg">
-                                    {publicacion.institucion?.user?.nombre}
+                                    {noticia.institucion?.user?.nombre}
                                 </h3>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                     {new Date(
-                                        publicacion.created_at
+                                        noticia.created_at
                                     ).toLocaleDateString("es-AR", {
                                         year: "numeric",
                                         month: "long",
@@ -496,10 +496,10 @@ export default function PublicacionModal({
                     {/* Título y Contenido */}
                     <div className="p-4 border-b border-gray-200 dark:border-gray-700">
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                            {publicacion.titulo}
+                            {noticia.titulo}
                         </h1>
                         <div className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed max-h-[240px] overflow-y-auto pr-2 custom-scroll">
-                            {publicacion.contenido}
+                            {noticia.contenido}
                         </div>
                     </div>
 
@@ -514,7 +514,7 @@ export default function PublicacionModal({
                             isFavorite={isFavorite}
                             onFavorite={handleFavorite}
                             canFavorite={canFavorite}
-                            publicacionId={publicacion.id}
+                            noticiaId={noticia.id}
                             layout="spaced"
                             size="default"
                         />
@@ -544,8 +544,8 @@ export default function PublicacionModal({
                                         comentario={comentario}
                                         userType={userType}
                                         currentUserId={currentUserId}
-                                        publicacionInstitucionId={
-                                            publicacion.perf_institucion_id
+                                        noticiaInstitucionId={
+                                            noticia.perf_institucion_id
                                         }
                                         level={0}
                                     />

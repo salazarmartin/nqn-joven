@@ -2,7 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Models\ComentPublicacion;
+use App\Models\ComentNoticia;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\DatabaseMessage;
 
@@ -10,7 +10,7 @@ class ComentarioCreadoNotification extends Notification
 {
     public $comentario;
 
-    public function __construct(ComentPublicacion $comentario)
+    public function __construct(ComentNoticia $comentario)
     {
         $this->comentario = $comentario;
     }
@@ -36,7 +36,7 @@ class ComentarioCreadoNotification extends Notification
 
         return [
             'comentario_id' => $this->comentario->id,
-            'publicacion_id' => $this->comentario->publicacion_id,
+            'noticia_id' => $this->comentario->noticia_id,
             'contenido' => $this->comentario->contenido,
             'usuario' => $usuarioArray, // <<--- aquí el usuario aplanado
             'tipo' => 'comentario',
@@ -61,7 +61,7 @@ class ComentarioCreadoNotification extends Notification
             'data' => [
                 'comentario_id' => $this->comentario->id,
                 'contenido' => $this->comentario->contenido,
-                'publicacion_id' => $this->comentario->publicacion_id,
+                'noticia_id' => $this->comentario->noticia_id,
                 'tipo' => 'comentario',
                 'usuario' => [
                     'nombre' => $usuario->nombre ?? $usuario->name ?? 'Usuario desconocido',
@@ -94,7 +94,7 @@ class ComentarioCreadoNotification extends Notification
 
         return [
             'comentario_id' => $this->comentario->id,
-            'publicacion_id' => $this->comentario->publicacion_id,
+            'noticia_id' => $this->comentario->noticia_id,
             'contenido' => $this->comentario->contenido,
             'usuario' => $usuarioArray, // <<--- aquí va
             'tipo' => 'comentario',

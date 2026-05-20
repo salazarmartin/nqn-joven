@@ -7,6 +7,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Models\Region;
+use App\Models\Estudio;
 
 class EmailVerificationPromptController extends Controller
 {
@@ -17,10 +19,13 @@ class EmailVerificationPromptController extends Controller
     {
         // Si ya verificó el email
         if ($request->user()->hasVerifiedEmail()) {
+
+            $regiones = Region::orderBy('nombre','asc')->get();
+            $estudios = Estudio::orderBy('nombre','asc')->get();
             
             // Si está en pendiente_datos, redirigir a completar datos
             if ($request->user()->estado === 'pendiente_datos') {
-                return redirect()->route('completar.datos', ['type' => $request->user()->tipo_usuario]);
+                return redirect()->route('completar.datos', ['type' => $request->user()->tipo_usuario, 'regiones' => $regiones, 'estudios'=>$estudios]);
             }
             
             // Si está en pendiente_aprobacion (institución), redirigir a vista de espera

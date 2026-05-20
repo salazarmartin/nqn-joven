@@ -2,7 +2,7 @@ import { MoreVertical } from "lucide-react";
 import { Link } from "@inertiajs/react";
 
 /**
- * Componente para mostrar info de la institucion en una publicación
+ * Componente para mostrar info de la institucion en una noticia
  */
 export default function PublicacionHeader({
     institucion,

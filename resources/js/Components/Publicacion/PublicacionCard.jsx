@@ -6,26 +6,26 @@ import MediaFullscreenMobile from "./MediaFullscreenMobile";
 import { FileText } from "lucide-react";
 
 export default function PublicacionCard({
-    publicacion,
+    noticia,
     userType,
     auth,
     disableModal = false,
     disableFavorite = false,
 }) {
-    const [isLiked, setIsLiked] = useState(publicacion.user_has_liked);
+    const [isLiked, setIsLiked] = useState(noticia.user_has_liked);
     const [likesCount, setLikesCount] = useState(
-        Number(publicacion.likes_count) || 0
+        Number(noticia.likes_count) || 0
     );
-    const [isFavorite, setIsFavorite] = useState(publicacion.is_favorite);
+    const [isFavorite, setIsFavorite] = useState(noticia.is_favorite);
     const [showModal, setShowModal] = useState(false);
     const [showMobileFullscreen, setShowMobileFullscreen] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
-        setIsLiked(publicacion.user_has_liked);
-        setLikesCount(publicacion.likes_count);
-        setIsFavorite(publicacion.is_favorite);
-    }, [publicacion.id]);
+        setIsLiked(noticia.user_has_liked);
+        setLikesCount(noticia.likes_count);
+        setIsFavorite(noticia.is_favorite);
+    }, [noticia.id]);
 
     useEffect(() => {
         const checkMobile = () => {
@@ -49,8 +49,8 @@ export default function PublicacionCard({
 
         try {
             const res = await axios.post("/likes/toggle", {
-                target_id: publicacion.id,
-                target_tipo: "publicacion",
+                target_id: noticia.id,
+                target_tipo: "noticia",
             });
 
             if (!res.data.success) {
@@ -73,7 +73,7 @@ export default function PublicacionCard({
 
         try {
             const res = await axios.post("/favoritos/toggle", {
-                publicacion_id: publicacion.id,
+                noticia_id: noticia.id,
             });
 
             if (!res.data.success) {
@@ -115,7 +115,7 @@ export default function PublicacionCard({
         // }
 
         if (!e.target.closest(".media-container")) {
-            router.visit(`/publicaciones/${publicacion.id}`);
+            router.visit(`/noticias/${noticia.id}`);
         }
     };
 
@@ -123,8 +123,8 @@ export default function PublicacionCard({
     const canFavorite = !disableFavorite;
 
     const primeraMedia =
-        publicacion.media && publicacion.media.length > 0
-            ? publicacion.media[0]
+        noticia.media && noticia.media.length > 0
+            ? noticia.media[0]
             : null;
 
     return (
@@ -139,30 +139,30 @@ export default function PublicacionCard({
             >
                 {/* Header - Nombre de la institución */}
                 <Link
-                    href={`/instituciones/${publicacion.institucion.id}`}
+                    href={`/instituciones/${noticia.institucion.id}`}
                     onClick={(e) => e.stopPropagation()}
                 >
                     <div className="p-4 flex items-center space-x-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                         <img
                             src={
-                                publicacion.institucion?.user
+                                noticia.institucion?.user
                                     ?.profile_photo_url ||
                                 "/profile-photos/default-avatar.webp"
                             }
                             alt={
-                                publicacion.institucion?.user?.nombre ||
+                                noticia.institucion?.user?.nombre ||
                                 "Institución"
                             }
                             className="w-12 h-12 rounded-full object-cover"
                         />
                         <div className="flex-1">
                             <h3 className="font-semibold text-gray-900 dark:text-white text-base">
-                                {publicacion.institucion?.user?.nombre ||
+                                {noticia.institucion?.user?.nombre ||
                                     "Institución"}
                             </h3>
                             <p className="text-xs text-gray-500 dark:text-gray-400">
                                 {new Date(
-                                    publicacion.created_at
+                                    noticia.created_at
                                 ).toLocaleDateString("es-AR", {
                                     day: "numeric",
                                     month: "short",
@@ -177,9 +177,9 @@ export default function PublicacionCard({
                 {/* Contenido de texto */}
                 <div className="px-4 pb-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-edu-mid hover:opacity-80">
                     <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
-                        {publicacion.contenido.length > 200
-                            ? publicacion.contenido.substring(0, 200) + "..."
-                            : publicacion.contenido}
+                        {noticia.contenido.length > 200
+                            ? noticia.contenido.substring(0, 200) + "..."
+                            : noticia.contenido}
                     </p>
                 </div>
 
@@ -194,7 +194,7 @@ export default function PublicacionCard({
                         {primeraMedia.tipo === "imagen" && (
                             <img
                                 src={primeraMedia.url_publica}
-                                alt={publicacion.titulo}
+                                alt={noticia.titulo}
                                 className="w-full h-full object-cover"
                             />
                         )}
@@ -217,13 +217,13 @@ export default function PublicacionCard({
 
                         <div className="absolute bottom-0 left-0 right-0 p-6 pointer-events-none">
                             <h2 className="text-white text-2xl font-bold leading-tight drop-shadow-lg">
-                                {publicacion.titulo}
+                                {noticia.titulo}
                             </h2>
                         </div>
 
-                        {publicacion.media.length > 1 && (
+                        {noticia.media.length > 1 && (
                             <div className="absolute top-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm font-medium pointer-events-none">
-                                +{publicacion.media.length - 1}
+                                +{noticia.media.length - 1}
                             </div>
                         )}
                     </div>
@@ -233,7 +233,7 @@ export default function PublicacionCard({
                 {!primeraMedia && (
                     <div className="px-4 pb-3">
                         <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                            {publicacion.titulo}
+                            {noticia.titulo}
                         </h2>
                     </div>
                 )}
@@ -248,12 +248,12 @@ export default function PublicacionCard({
                         likesCount={likesCount}
                         onLike={handleLike}
                         canLike={canLike}
-                        comentariosCount={publicacion.comentarios_count}
-                        commentHref={`/publicaciones/${publicacion.id}`}
+                        comentariosCount={noticia.comentarios_count}
+                        commentHref={`/noticias/${noticia.id}`}
                         isFavorite={isFavorite}
                         onFavorite={handleFavorite}
                         canFavorite={canFavorite}
-                        publicacionId={publicacion.id}
+                        noticiaId={noticia.id}
                         layout="spaced"
                         size="default"
                     />
@@ -262,7 +262,7 @@ export default function PublicacionCard({
 
             {showModal && !isMobile && (
                 <PublicacionModal
-                    publicacion={publicacion}
+                    noticia={noticia}
                     userType={userType}
                     auth={auth}
                     onClose={() => setShowModal(false)}
@@ -271,7 +271,7 @@ export default function PublicacionCard({
 
             {showMobileFullscreen && isMobile && (
                 <MediaFullscreenMobile
-                    publicacion={publicacion}
+                    noticia={noticia}
                     onClose={() => setShowMobileFullscreen(false)}
                 />
             )}

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('coment_publicaciones', function (Blueprint $table) {
+        Schema::table('coment_noticias', function (Blueprint $table) {
             $table->boolean('eliminado')->default(false)->after('contenido');
         });
     }
@@ -22,7 +22,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('coment_publicaciones', function (Blueprint $table) {
+        Schema::table('coment_noticias', function (Blueprint $table) {
             $table->dropColumn('eliminado');
         });
     }

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FileText, Download, X } from "lucide-react";
 
 /**
- * Componente para mostrar el contenido de una publicación
+ * Componente para mostrar el contenido de una noticia
  */
 export default function PublicacionContent({
     titulo,
@@ -151,7 +151,7 @@ function MediaItem({ media, size = "medium" }) {
                 {media.tipo === "imagen" && (
                     <img
                         src={media.url_publica}
-                        alt="Imagen de publicación"
+                        alt="Imagen de noticia"
                         className={`w-full ${sizeClasses[size]} object-cover cursor-pointer hover:opacity-90 transition`}
                         onClick={handleImageClick}
                         loading="lazy"

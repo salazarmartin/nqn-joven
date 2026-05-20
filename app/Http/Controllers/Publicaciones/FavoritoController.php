@@ -11,16 +11,16 @@ use Illuminate\Support\Facades\Auth;
 class FavoritoController extends Controller
 {
     /**
-     * Toggle favorito en una publicación
+     * Toggle favorito en una noticia
      * guardar y eliminar favoritos
      */
     public function toggle(Request $request)
     {
         $validated = $request->validate([
-            'publicacion_id' => 'required|exists:publicaciones,id',
+            'noticia_id' => 'required|exists:noticias,id',
         ]);
 
-        $publicacionId = $validated['publicacion_id'];
+        $noticiaId = $validated['noticia_id'];
         $user = Auth::user();
 
         $campo = $user->tipo_usuario === 'persona' ? 'perf_persona_id' : 'perf_institucion_id';
@@ -28,7 +28,7 @@ class FavoritoController extends Controller
 
         $favorito = Favorito::where([
             $campo => $perfilId,
-            'publicacion_id' => $publicacionId,
+            'noticia_id' => $noticiaId,
         ])->first();
 
         if ($favorito) {
@@ -37,40 +37,40 @@ class FavoritoController extends Controller
             ActividadController::registrar(
                 $user->id,
                 'dejar_favorito',
-                'publicacion',
-                $publicacionId,
+                'noticia',
+                $noticiaId,
                 'Quitaste de favoritos'
             );
 
             return response()->json([
                 'success' => true,
                 'action' => 'removed',
-                'message' => 'Publicación eliminada de favoritos',
+                'message' => 'Noticia eliminada de favoritos',
             ]);
         } else {
             Favorito::create([
                 $campo => $perfilId,
-                'publicacion_id' => $publicacionId,
+                'noticia_id' => $noticiaId,
             ]);
 
             ActividadController::registrar(
                 $user->id,
                 'favorito',
-                'publicacion',
-                $publicacionId,
+                'noticia',
+                $noticiaId,
                 'Guardaste en favoritos'
             );
 
             return response()->json([
                 'success' => true,
                 'action' => 'added',
-                'message' => 'Publicación agregada a favoritos',
+                'message' => 'Noticia agregada a favoritos',
             ]);
         }
     }
 
     /**
-     * Lista de publicaciones favoritas del usuario
+     * Lista de noticias favoritas del usuario
      */
     public function index()
     {
@@ -81,16 +81,16 @@ class FavoritoController extends Controller
         $perfilId = $user->tipo_usuario === 'persona' ? $user->persona->id : $user->institucion->id;
 
         $favoritos = Favorito::with([
-            'publicacion.institucion.user',
-            'publicacion.media',
-            'publicacion.likes',
+            'noticia.institucion.user',
+            'noticia.media',
+            'noticia.likes',
         ])
             ->where($campo, $perfilId)
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        $publicaciones = $favoritos->through(function ($fav) use ($user) {
-            $pub = $fav->publicacion;
+        $noticias = $favoritos->through(function ($fav) use ($user) {
+            $pub = $fav->noticia;
             if ($pub) {
                 $pub->is_favorite = true;
 
@@ -110,7 +110,7 @@ class FavoritoController extends Controller
         return inertia('Favoritos/Index', [
             'auth' => ['user' => $user],
             'userType' => $user->tipo_usuario,
-            'favoritos' => $publicaciones,
+            'favoritos' => $noticias,
         ]);
     }
 }

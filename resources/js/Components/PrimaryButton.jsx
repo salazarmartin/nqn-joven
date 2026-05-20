@@ -14,6 +14,7 @@ export default function PrimaryButton({
                     disabled && "opacity-25"
                 } ` + className
             }
+            style={{background:"#5d4dff"}}
             disabled={disabled}
         >
             {children}

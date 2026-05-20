@@ -2,6 +2,7 @@ import Dropdown from "@/Components/Dropdown";
 import { Link, usePage } from "@inertiajs/react";
 import BarraBusqueda from "../BarraBusqueda/BarraBusqueda";
 import NavLink from "../NavLink";
+import {Bell } from "lucide-react";
 import { useEffect, useState, memo} from "react";
 import axios from "axios";
 import "../../echo";
@@ -52,7 +53,7 @@ export default function Header({ onToggleSidebar }) {
                     created_at: data.comentario.created_at,
                     data: {
                         tipo: "comentario",
-                        publicacion_id: data.comentario.publicacion_id,
+                        noticia_id: data.comentario.noticia_id,
                         contenido: data.comentario.contenido,
                         usuario: data.comentario.usuario,
                     },
@@ -71,7 +72,7 @@ export default function Header({ onToggleSidebar }) {
                     created_at: data.like.created_at,
                     data: {
                         tipo: "like",
-                        publicacion_id: data.like.publicacion_id,
+                        noticia_id: data.like.noticia_id,
                         target_tipo: data.like.target_tipo,
                         usuario: data.like.usuario,
                     },
@@ -91,7 +92,7 @@ export default function Header({ onToggleSidebar }) {
                     created_at: data.comentario.created_at,
                     data: {
                         tipo: "respuesta",
-                        publicacion_id: data.comentario.publicacion_id,
+                        noticia_id: data.comentario.noticia_id,
                         contenido: data.comentario.contenido,
                         usuario: data.comentario.usuario,
                         coment_padre_id: data.comentario.coment_padre_id,
@@ -106,12 +107,12 @@ export default function Header({ onToggleSidebar }) {
         canal.listen(".UbicacionGuardada", (data) => {
             setNotificaciones((prev) => [
                 {
-                    id: data.publicacion_id, // usar id de la publicación como identificador
+                    id: data.noticia_id, // usar id de la noticia como identificador
                     type: "App\\Notifications\\UbicacionGuardadaNotification",
                     created_at: data.created_at,
                     data: {
-                        tipo: "publicacion",
-                        publicacion_id: data.publicacion_id,
+                        tipo: "noticia",
+                        noticia_id: data.noticia_id,
                         institucion_id: data.institucion_id,
                         mensaje: data.mensaje,
                         usuario: data.usuario,
@@ -143,7 +144,7 @@ export default function Header({ onToggleSidebar }) {
         const esLike = tipo === "like";
         const esComentario = tipo === "comentario";
         const esRespuesta = tipo === "respuesta";
-        const esPublicacion = tipo === "publicacion";
+        const esNoticia = tipo === "noticia";
 
         const usuario = notif.data?.usuario ?? {};
         const usuarioNombre =
@@ -155,24 +156,24 @@ export default function Header({ onToggleSidebar }) {
         // Mensaje según tipo
         let mensaje = "";
         if (esComentario) {
-            mensaje = "comentó tu publicación";
+            mensaje = "comentó tu noticia";
         } else if (esLike) {
             const targetTipo = notif.data?.target_tipo;
             if (targetTipo === 'comentario') {
                 mensaje = "le gusta tu comentario";
             } else {
-                mensaje = "le gusta tu publicación";
+                mensaje = "le gusta tu noticia";
             }
         } else if (esRespuesta) {
             mensaje = "respondió a tu comentario";
-        } else if (esPublicacion) {
+        } else if (esNoticia) {
             mensaje = notif.data?.mensaje ?? "ha publicado algo";
         }
 
         return (
             <Link
-                href={`/publicaciones/${
-                    notif.data?.publicacion_id ?? notif.data?.like_id
+                href={`/noticias/${
+                    notif.data?.noticia_id ?? notif.data?.like_id
                 }`}
                 className="block px-4 py-3 border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
@@ -217,14 +218,25 @@ export default function Header({ onToggleSidebar }) {
     NotificacionItem.displayName = 'NotificacionItem';
 
     return (
-        <header className="bg-edu-dark text-white sticky top-0 z-50">
+        <header className=" text-white sticky top-0 z-50" style={{background:"#5d4dff"}}>
             <nav className="mx-auto max-w-8xl px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16 items-center justify-between">
+                    <button
+                        onClick={onToggleSidebar}
+                        className="flex items-center justify-center p-1"
+                    >
+                        <img
+                            src="/svg/header/side.svg"
+                            alt="Menú"
+                            className="w-8 h-8 "
+                        />
+                    </button>
+                    
                     <Link href="/inicio" className="flex items-center">
                         <img
-                            src="/images/logo-navbar-eduquen.webp"
-                            alt="EDUQUÉN"
-                            className="h-8 w-auto"
+                            src="/images/logo-navbar-nqnjoven.png"
+                            alt="NQN Jóven"
+                            className="h-12 w-auto"
                         />
                     </Link>
 
@@ -264,11 +276,13 @@ export default function Header({ onToggleSidebar }) {
                                     className="relative inline-flex items-center rounded-full p-2 hover:bg-white/10 transition-colors"
                                     onClick={abrirDropdown}
                                 >
-                                    <img
-                                        src="/svg/header/Vector.svg"
-                                        alt="Notificaciones"
-                                        className="h-6 w-6"
+                                    <Bell
+                                        size={26}
+                                        color={"white"}
+                                        strokeWidth={2.5}
+                                        fill={"white"}
                                     />
+                                    
                                     {contadorRojo > 0 && (
                                         <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
                                             {contadorRojo}
@@ -309,11 +323,13 @@ export default function Header({ onToggleSidebar }) {
                                     className="relative inline-flex items-center rounded-full p-2 hover:bg-white/10 transition-colors"
                                     onClick={abrirDropdown}
                                 >
-                                    <img
-                                        src="/svg/header/Vector.svg"
-                                        alt="Notificaciones"
-                                        className="h-6 w-6"
+                                    <Bell
+                                        size={26}
+                                        color={"white"}
+                                        strokeWidth={2.5}
+                                        fill={"white"}
                                     />
+                                    
                                     {contadorRojo > 0 && (
                                         <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
                                             {contadorRojo}
@@ -321,6 +337,7 @@ export default function Header({ onToggleSidebar }) {
                                     )}
                                 </button>
                             </Dropdown.Trigger>
+
 
                             {/* Dropdown mobile */}
                             <Dropdown.Content className="w-[calc(100vw-2rem)] max-w-md right-0 left-auto">

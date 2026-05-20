@@ -6,7 +6,7 @@ use App\Models\InstitucionMaterial;
 use App\Models\PerfInstitucion;
 use App\Models\PerfPersona;
 use App\Models\UbicacionGuardada;
-use App\Models\Publicacion;
+use App\Models\Noticia;
 use App\Models\VisitaInstitucion;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -14,7 +14,7 @@ use Inertia\Inertia;
 class InstitucionController extends Controller
 {
     /**
-     * Muestra el perfil público de una institución junto con sus publicaciones.
+     * Muestra el perfil público de una institución junto con sus noticias.
      */
     public function show($id)
 {
@@ -25,7 +25,7 @@ class InstitucionController extends Controller
     $institucion = PerfInstitucion::with([
         'user',
         'residencias',
-        'publicaciones' => function ($query) {
+        'noticias' => function ($query) {
             $query->publicadas()
                 ->recientes()
                 ->with(['media', 'likes', 'comentarios']);
@@ -58,8 +58,8 @@ class InstitucionController extends Controller
             }
         }
 
-    // Paginar publicaciones
-    $publicaciones = Publicacion::where('perf_institucion_id', $id)
+    // Paginar noticias
+    $noticias = Noticia::where('perf_institucion_id', $id)
         ->where('publicado', true)
         ->with([
             'institucion.user',
@@ -75,22 +75,22 @@ class InstitucionController extends Controller
 
     // Agregar info de si el usuario dio like/fav
     if ($user) {
-        $publicaciones->getCollection()->transform(function ($publicacion) use ($user) {
+        $noticias->getCollection()->transform(function ($noticia) use ($user) {
             if ($user->tipo_usuario === 'persona') {
-                $publicacion->user_has_liked =
-                    $publicacion->likes->contains('perf_persona_id', $user->persona->id);
+                $noticia->user_has_liked =
+                    $noticia->likes->contains('perf_persona_id', $user->persona->id);
 
-                $publicacion->is_favorite =
-                    $publicacion->favoritos->contains('perf_persona_id', $user->persona->id);
+                $noticia->is_favorite =
+                    $noticia->favoritos->contains('perf_persona_id', $user->persona->id);
 
             } else {
-                $publicacion->user_has_liked =
-                    $publicacion->likes->contains('perf_institucion_id', $user->institucion->id);
+                $noticia->user_has_liked =
+                    $noticia->likes->contains('perf_institucion_id', $user->institucion->id);
 
-                $publicacion->is_favorite = false;
+                $noticia->is_favorite = false;
             }
 
-            return $publicacion;
+            return $noticia;
         });
     }
 
@@ -108,7 +108,7 @@ class InstitucionController extends Controller
     return Inertia::render('Instituciones/Show', [
         'institucion' => $institucion,
         'guardada' => $guardada,
-        'publicaciones' => $publicaciones,
+        'noticias' => $noticias,
         'residencias' => $residencias,
         'materiales' => $materiales,
         'auth' => [

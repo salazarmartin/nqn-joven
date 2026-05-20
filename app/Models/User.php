@@ -107,4 +107,9 @@ class User extends Authenticatable implements MustVerifyEmail
 
         return true;
     }
+
+    public function evento()
+    {
+        return $this->hasOne(Evento::class);
+    }
 }

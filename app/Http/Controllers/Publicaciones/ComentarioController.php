@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Publicaciones;
 
 use App\Http\Controllers\ActividadController;
 use App\Http\Controllers\Controller;
-use App\Models\ComentPublicacion;
+use App\Models\ComentNoticia;
 use App\Services\OpenAIModerationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,14 +31,14 @@ class ComentarioController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'publicacion_id' => 'required|exists:publicaciones,id',
+            'noticia_id' => 'required|exists:noticias,id',
             'contenido' => 'required|string|max:1000',
-            'coment_padre_id' => 'nullable|exists:coment_publicaciones,id',
+            'coment_padre_id' => 'nullable|exists:coment_noticias,id',
         ]);
 
         $user = Auth::user();
 
-        // Moderar el contenido ANTES de permitir su publicación
+        // Moderar el contenido ANTES de permitir su noticia
         $moderationResult = $this->moderationService->moderate($validated['contenido']);
 
         if (!$moderationResult['is_safe']) {
@@ -53,7 +53,7 @@ class ComentarioController extends Controller
         }
 
         $comentarioData = [
-            'publicacion_id' => $validated['publicacion_id'],
+            'noticia_id' => $validated['noticia_id'],
             'contenido' => $validated['contenido'], // guardar texto original
             'coment_padre_id' => $validated['coment_padre_id'] ?? null,
         ];
@@ -64,7 +64,7 @@ class ComentarioController extends Controller
             $comentarioData['perf_institucion_id'] = $user->institucion->id;
         }
 
-        $comentario = ComentPublicacion::create($comentarioData);
+        $comentario = ComentNoticia::create($comentarioData);
 
         Log::info('Comentario creado:', [
             'id' => $comentario->id,
@@ -77,14 +77,14 @@ class ComentarioController extends Controller
         Log::info('Disparando evento ComentarioCreado para comentario normal', ['id' => $comentario->id]);
         
         // 👇 VERIFICAR ANTES DE DISPARAR EL EVENTO
-        $publicacion = $comentario->publicacion;
-        $duenoPublicacion = $publicacion->institucion->user;
+        $noticia = $comentario->noticia;
+        $duenoNoticia = $noticia->institucion->user;
         
-        if ($user->id !== $duenoPublicacion->id) {
+        if ($user->id !== $duenoNoticia->id) {
             event(new ComentarioCreado($comentario));
         }
     } else {
-        $comentarioPadre = ComentPublicacion::find($comentario->coment_padre_id);
+        $comentarioPadre = ComentNoticia::find($comentario->coment_padre_id);
         
         // 👇 VERIFICAR ANTES DE DISPARAR EL EVENTO
         $receptorPadre = $comentarioPadre->persona?->user ?? $comentarioPadre->institucion?->user;
@@ -101,7 +101,7 @@ class ComentarioController extends Controller
     }
         
 
-        $comentario = ComentPublicacion::with([
+        $comentario = ComentNoticia::with([
             'persona.user',
             'institucion.user',
             'likes'
@@ -112,9 +112,9 @@ class ComentarioController extends Controller
         ActividadController::registrar(
             $user->id,
             'comentario',
-            'publicacion',
-            $validated['publicacion_id'],
-            'Comentaste una publicación',
+            'noticia',
+            $validated['noticia_id'],
+            'Comentaste una noticia',
             ['comentario' => $validated['contenido']]
         );
         
@@ -132,7 +132,7 @@ class ComentarioController extends Controller
         public function destroy($id)
         {
             $user = Auth::user();
-            $comentario = ComentPublicacion::with('publicacion')->findOrFail($id);
+            $comentario = ComentNoticia::with('noticia')->findOrFail($id);
 
             $puedeEliminar = false;
 
@@ -143,10 +143,10 @@ class ComentarioController extends Controller
                 $puedeEliminar = true;
             }
 
-            // Verificar si es el dueño de la publicación
+            // Verificar si es el dueño de la noticia
             if (
                 $user->tipo_usuario === 'institucion' &&
-                $comentario->publicacion->perf_institucion_id === $user->institucion->id
+                $comentario->noticia->perf_institucion_id === $user->institucion->id
             ) {
                 $puedeEliminar = true;
             }

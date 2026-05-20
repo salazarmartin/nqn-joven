@@ -19,19 +19,19 @@ import {
     MAX_CATEGORIAS_PUBLICACION,
 } from "@/utils/categoriasConfig";
 
-export default function Edit({ auth, publicacion }) {
+export default function Edit({ auth, noticia }) {
     useFlash();
 
-    const isPublicado = publicacion.publicado;
+    const isPublicado = noticia.publicado;
 
     const [formState, setFormState] = useState({
-        titulo: publicacion.titulo,
-        contenido: publicacion.contenido,
-        publicado: publicacion.publicado,
-        categorias: publicacion.categorias || [],
+        titulo: noticia.titulo,
+        contenido: noticia.contenido,
+        publicado: noticia.publicado,
+        categorias: noticia.categorias || [],
     });
 
-    const [existingMedia, setExistingMedia] = useState(publicacion.media || []);
+    const [existingMedia, setExistingMedia] = useState(noticia.media || []);
     const [mediaFiles, setMediaFiles] = useState([]);
     const [deletedMedia, setDeletedMedia] = useState([]);
     const [processing, setProcessing] = useState(false);
@@ -126,23 +126,23 @@ export default function Edit({ auth, publicacion }) {
             }
 
             setProcessing(true);
-            const loadingToast = toast.loading("Actualizando publicación...");
+            const loadingToast = toast.loading("Actualizando noticia...");
 
             const formData = new FormData();
             formData.append("contenido", formState.contenido.trim());
             formData.append("_method", "POST");
 
-            router.post(`/publicaciones/${publicacion.id}`, formData, {
+            router.post(`/noticias/${noticia.id}`, formData, {
                 forceFormData: true,
                 preserveScroll: false,
                 onSuccess: () => {
                     toast.dismiss(loadingToast);
-                    toast.success("¡Publicación actualizada correctamente!");
+                    toast.success("¡noticia actualizada correctamente!");
                     setProcessing(false);
                 },
                 onError: (errors) => {
                     toast.dismiss(loadingToast);
-                    toast.error("No se pudo actualizar la publicación");
+                    toast.error("No se pudo actualizar la noticia");
                     setProcessing(false);
                 },
                 onFinish: () => setProcessing(false),
@@ -178,7 +178,7 @@ export default function Edit({ auth, publicacion }) {
             }
 
             setProcessing(true);
-            const loadingToast = toast.loading("Actualizando publicación...");
+            const loadingToast = toast.loading("Actualizando noticia...");
 
             const formData = new FormData();
             formData.append("titulo", formState.titulo.trim());
@@ -200,17 +200,17 @@ export default function Edit({ auth, publicacion }) {
                 formData.append(`media[${index}][tipo]`, media.tipo);
             });
 
-            router.post(`/publicaciones/${publicacion.id}`, formData, {
+            router.post(`/noticias/${noticia.id}`, formData, {
                 forceFormData: true,
                 preserveScroll: false,
                 onSuccess: () => {
                     toast.dismiss(loadingToast);
-                    toast.success("¡Publicación actualizada correctamente!");
+                    toast.success("¡noticia actualizada correctamente!");
                     setProcessing(false);
                 },
                 onError: (errors) => {
                     toast.dismiss(loadingToast);
-                    toast.error("No se pudo actualizar la publicación");
+                    toast.error("No se pudo actualizar la noticia");
                     setProcessing(false);
                 },
                 onFinish: () => setProcessing(false),
@@ -292,21 +292,21 @@ export default function Edit({ auth, publicacion }) {
     };
 
     return (
-        <AuthenticatedLayout user={auth.user} showRecomendaciones={false}>
-            <Head title="Editar Publicación" />
+        <AuthenticatedLayout user={auth.user} >
+            <Head title="Editar noticia" />
 
             <div className="py-8">
                 <div className="max-w-3xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white dark:bg-gray-800 overflow-hidden sm:rounded-lg border border-gray-200 dark:border-gray-700 transition-colors">
                         <div className="p-8">
                             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-                                Editar Publicación
+                                Editar noticia
                             </h1>
 
                             {isPublicado && (
                                 <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-md">
                                     <p className="text-sm text-blue-800 dark:text-blue-200">
-                                        Esta publicación ya está publicada. Solo
+                                        Esta noticia ya está publicada. Solo
                                         podés editar el contenido.
                                     </p>
                                 </div>
@@ -343,7 +343,7 @@ export default function Edit({ auth, publicacion }) {
                                             }}
                                             onBlur={() => handleBlur("titulo")}
                                             className="mt-1 block w-full rounded-md"
-                                            placeholder="Título de la publicación"
+                                            placeholder="Título de la noticia"
                                             maxLength={CONFIG.titulo.maxLength}
                                         />
                                         <div className="flex justify-between items-start mt-1">
@@ -395,7 +395,7 @@ export default function Edit({ auth, publicacion }) {
                                         onBlur={() => handleBlur("contenido")}
                                         className="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:border-gray-500 focus:ring-gray-500 rounded-md shadow-sm"
                                         rows="8"
-                                        placeholder="Escribe el contenido de tu publicación..."
+                                        placeholder="Escribe el contenido de tu noticia..."
                                         maxLength={CONFIG.contenido.maxLength}
                                     />
                                     <div className="flex justify-between items-start mt-1">
@@ -424,7 +424,7 @@ export default function Edit({ auth, publicacion }) {
                                             <div className="flex items-center gap-2">
                                                 <Tag className="w-5 h-5 text-blue-600" />
                                                 <InputLabel
-                                                    value="Categorías de la publicación *"
+                                                    value="Categorías de la noticia *"
                                                     className="text-lg font-bold dark:text-white"
                                                 />
                                             </div>
@@ -446,7 +446,7 @@ export default function Edit({ auth, publicacion }) {
                                             Selecciona hasta{" "}
                                             {MAX_CATEGORIAS_PUBLICACION}{" "}
                                             categorías que describan tu
-                                            publicación.
+                                            noticia.
                                         </p>
 
                                         {/* Categorías seleccionadas */}
@@ -696,7 +696,7 @@ export default function Edit({ auth, publicacion }) {
                                     </div>
                                 )}
 
-                                {/* Estado de publicación - solo si es borrador */}
+                                {/* Estado de noticia - solo si es borrador */}
                                 {!isPublicado && (
                                     <div className="flex items-center space-x-2">
                                         <input
@@ -721,7 +721,7 @@ export default function Edit({ auth, publicacion }) {
                                 {/* Botones */}
                                 <div className="flex items-center justify-end space-x-4 pt-4">
                                     <a
-                                        href="/publicaciones/misPublicaciones"
+                                        href="/noticias/misPublicaciones"
                                         className="inline-flex items-center px-6 py-3 bg-white dark:bg-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition ease-in-out duration-150"
                                     >
                                         Cancelar

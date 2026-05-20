@@ -15,7 +15,7 @@ export default function ComentarioItem({
     comentario,
     userType,
     currentUserId,
-    publicacionInstitucionId,
+    noticiaInstitucionId,
     level = 0,
 }) {
     const [isLiked, setIsLiked] = useState(
@@ -134,7 +134,7 @@ export default function ComentarioItem({
 
         try {
             const response = await axios.post("/comentarios", {
-                publicacion_id: comentario.publicacion_id,
+                noticia_id: comentario.noticia_id,
                 contenido: replyText,
                 coment_padre_id: comentario.id,
             });
@@ -229,7 +229,7 @@ export default function ComentarioItem({
                                         router.visit(window.location.pathname, {
                                             preserveScroll: true,
                                             preserveState: false,
-                                            only: ["publicacion"],
+                                            only: ["noticia"],
                                         });
                                     })
                                     .catch(() => {
@@ -264,7 +264,7 @@ export default function ComentarioItem({
             currentUserId === comentario.perf_persona_id) ||
             (userType === "institucion" &&
                 (currentUserId === comentario.perf_institucion_id ||
-                    currentUserId === publicacionInstitucionId)));
+                    currentUserId === noticiaInstitucionId)));
 
     const esPersona = comentario.perf_persona_id && comentario.persona;
 
@@ -485,8 +485,8 @@ export default function ComentarioItem({
                                     comentario={respuesta}
                                     userType={userType}
                                     currentUserId={currentUserId}
-                                    publicacionInstitucionId={
-                                        publicacionInstitucionId
+                                    noticiaInstitucionId={
+                                        noticiaInstitucionId
                                     }
                                     level={level + 1}
                                 />

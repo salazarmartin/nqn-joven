@@ -1,6 +1,7 @@
 import InputLabel from "@/Components/InputLabel";
 import TextInput from "@/Components/TextInput";
 import InputError from "@/Components/InputError";
+import SelectInput from "@/Components/SelectInput";
 import AddressValidation from "@/Components/CompletarDatos/AddressValidation";
 
 export default function InstitucionFormFields({
@@ -12,6 +13,7 @@ export default function InstitucionFormFields({
     clearFieldError,
     validandoDireccion,
     direccionValida,
+    regiones,
     onValidarDireccion,
     setDireccionValida,
     mensajeValidacion,
@@ -58,14 +60,10 @@ export default function InstitucionFormFields({
                     }
                     className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 px-3 py-2 rounded-lg focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400"
                 >
-                    <option value="">Seleccionar tipo...</option>
+                    <option value="" disabled>Seleccionar tipo...</option>
                     <option value="Universidad">Universidad</option>
-                    <option value="Instituto Terciario">
-                        Instituto Terciario
-                    </option>
-                    <option value="Establecimiento de educación superior">
-                        Establecimiento de educación superior
-                    </option>
+                    <option value="Comercio">Comercio</option>
+                    <option value="Organismo">Organismo</option>
                     <option value="Otro">Otro</option>
                 </select>
                 {(clientErrors.tipo_institucion || errors.tipo_institucion) && (
@@ -118,6 +116,28 @@ export default function InstitucionFormFields({
 
             <div>
                 <InputLabel className="block font-medium mb-1 dark:text-gray-300">
+                    Razón Social *
+                </InputLabel>
+                <TextInput
+                    type="text"
+                    value={data.razon_social}
+                    onChange={(e) => {
+                        onDataChange("razon_social", e.target.value);
+                        clearFieldError("razon_social");
+                    }}
+                    onBlur={(e) => onFieldValidation("razon_social", e.target.value)}
+                    className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 px-3 py-2 rounded-lg focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400"
+                />
+                {(clientErrors.razon_social || errors.razon_social) && (
+                    <InputError
+                        message={clientErrors.razon_social || errors.razon_social}
+                        className="mt-1"
+                    />
+                )}
+            </div>
+
+            <div>
+                <InputLabel className="block font-medium mb-1 dark:text-gray-300">
                     Teléfono *
                 </InputLabel>
                 <TextInput
@@ -136,6 +156,72 @@ export default function InstitucionFormFields({
                 {(clientErrors.telefono || errors.telefono) && (
                     <InputError
                         message={clientErrors.telefono || errors.telefono}
+                        className="mt-1"
+                    />
+                )}
+            </div>
+
+            <div>
+                <InputLabel className="block font-medium mb-1 dark:text-gray-300">
+                    Email de Contacto *
+                </InputLabel>
+                <TextInput
+                    type="text"
+                    value={data.email_contacto}
+                    onChange={(e) => {
+                        onDataChange("email_contacto", e.target.value);
+                        clearFieldError("email_contacto");
+                    }}
+                    onBlur={(e) => onFieldValidation("email_contacto", e.target.value)}
+                    className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 px-3 py-2 rounded-lg focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400"
+                />
+                {(clientErrors.email_contacto || errors.email_contacto) && (
+                    <InputError
+                        message={clientErrors.email_contacto || errors.email_contacto}
+                        className="mt-1"
+                    />
+                )}
+            </div>
+
+            <div>
+                                    <InputLabel htmlFor="url_sitio_web" value="Sitio web" />
+                                    <TextInput
+                                        id="url_sitio_web"
+                                        type="text"
+                                        
+                                        value={data.url_sitio_web}
+                                        onChange={(e) => {
+                                            onDataChange("url_sitio_web", e.target.value);
+                                            clearFieldError("url_sitio_web");
+                                        }}
+                                        onBlur={(e) => onFieldValidation("url_sitio_web", e.target.value)}
+                                        className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 px-3 py-2 rounded-lg focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400"
+                                    />
+                                    {(clientErrors.url_sitio_web || errors.url_sitio_web) && (
+                                        <InputError
+                                            message={clientErrors.url_sitio_web || errors.url_sitio_web}
+                                            className="mt-1"
+                                        />
+                                    )}
+                                </div>
+
+            <div>
+                <InputLabel className="block font-medium mb-1 dark:text-gray-300">
+                    Región *
+                </InputLabel>
+                <SelectInput
+                    options={regiones}
+                    value={data.region_id}
+                    onChange={(e) => {
+                        onDataChange("region_id", e.target.value);
+                        clearFieldError("region_id");
+                    }}
+                    onBlur={(e) => onFieldValidation("region_id", e.target.value)}
+                    className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 px-3 py-2 rounded-lg focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400"
+                />
+                {(clientErrors.region_id || errors.region_id) && (
+                    <InputError
+                        message={clientErrors.region_id || errors.region_id}
                         className="mt-1"
                     />
                 )}

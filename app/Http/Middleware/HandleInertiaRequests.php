@@ -6,9 +6,10 @@ use Illuminate\Http\Request;
 use Inertia\Middleware;
 use App\Models\Mensaje;
 use Illuminate\Support\Facades\Auth;
-use App\Models\ComentPublicacion;
+use App\Models\ComentNoticia;
 use Illuminate\Notifications\DatabaseNotification;
-
+use App\Models\Region;
+use App\Models\Estudio;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -88,6 +89,9 @@ class HandleInertiaRequests extends Middleware
             ->whereNull('read_at')
             ->count();
 
+        $regiones = Region::orderBy('nombre','asc')->get();
+        $estudios = Estudio::orderBy('nombre','asc')->get();
+
         return [
             ...parent::share($request),
             'auth' => ['user' => $user],
@@ -99,6 +103,8 @@ class HandleInertiaRequests extends Middleware
             'unreadCount' => $unread,
             'notificacionesIniciales' => $notificacionesIniciales,
             'notificacionesNoLeidasCount' => $notificacionesNoLeidasCount,
+            'estudios' => $estudios,
+            'regiones' => $regiones
         ];
     }
 

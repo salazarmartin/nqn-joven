@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use App\Models\ComentPublicacion;
+use App\Models\ComentNoticia;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -14,7 +14,7 @@ class RespuestaComentarioEvent implements ShouldBroadcast
 
     public $comentario;
 
-    public function __construct(ComentPublicacion $comentario)
+    public function __construct(ComentNoticia $comentario)
     {
         // Cargamos relaciones necesarias, incluyendo la del comentario padre y sus usuarios
         $this->comentario = $comentario->load([
@@ -52,7 +52,7 @@ class RespuestaComentarioEvent implements ShouldBroadcast
         return [
             'comentario' => [
                 'id' => $this->comentario->id,
-                'publicacion_id' => $this->comentario->publicacion_id,
+                'noticia_id' => $this->comentario->noticia_id,
                 'coment_padre_id' => $this->comentario->coment_padre_id,
                 'contenido' => $this->comentario->contenido,
                 'usuario' => [

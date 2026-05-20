@@ -3,7 +3,7 @@ import { router } from "@inertiajs/react";
 
 export default function BarraBusqueda({
     variant = "global",
-    publicaciones = [],
+    noticias = [],
     onBusqueda = null,
 }) {
     const [isOpen, setIsOpen] = useState(false);
@@ -71,19 +71,19 @@ export default function BarraBusqueda({
         const queryLower = query.toLowerCase();
 
         if (variant === "favoritos") {
-            const publicacionesFiltradas = publicaciones.filter(
+            const noticiasFiltradas = noticias.filter(
                 (pub) =>
                     pub.titulo?.toLowerCase().includes(queryLower) ||
                     pub.contenido?.toLowerCase().includes(queryLower)
             );
 
             setResultados({
-                publicaciones: publicacionesFiltradas.slice(0, 15),
+                noticias: noticiasFiltradas.slice(0, 15),
             });
             setIsLoading(false);
 
             if (onBusqueda) {
-                onBusqueda(publicacionesFiltradas);
+                onBusqueda(noticiasFiltradas);
             }
         } else {
             fetch(`/api/buscar?q=${encodeURIComponent(query)}`, {
@@ -100,7 +100,7 @@ export default function BarraBusqueda({
                 })
                 .catch((error) => {
                     console.error("Error en búsqueda:", error);
-                    setResultados({ publicaciones: [], instituciones: [] });
+                    setResultados({ noticias: [], instituciones: [] });
                     setIsLoading(false);
                 });
         }
@@ -144,8 +144,8 @@ export default function BarraBusqueda({
             guardarEnHistorial(searchTerm);
         }
 
-        if (tipo === "publicacion") {
-            router.visit(`/publicaciones/${resultado.id}`);
+        if (tipo === "noticia") {
+            router.visit(`/noticias/${resultado.id}`);
         } else if (tipo === "institucion") {
             router.visit(`/instituciones/${resultado.id}`);
         }
@@ -167,10 +167,10 @@ export default function BarraBusqueda({
         localStorage.removeItem("historial_busqueda");
     };
 
-    const publicacionesResultado = resultados.publicaciones || [];
+    const noticiasResultado = resultados.noticias || [];
     const institucionesResultado = resultados.instituciones || [];
     const hayResultados =
-        publicacionesResultado.length > 0 || institucionesResultado.length > 0;
+        noticiasResultado.length > 0 || institucionesResultado.length > 0;
 
     return (
         <form
@@ -191,7 +191,7 @@ export default function BarraBusqueda({
                     onFocus={() => setIsOpen(true)}
                     placeholder={
                         variant === "global"
-                            ? "Buscar en EDUQUÉN"
+                            ? "Buscar en NQN-Jóven"
                             : "Ingresá título o contenido"
                     }
                     className="w-full border-0 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-0"
@@ -297,17 +297,17 @@ export default function BarraBusqueda({
                                     </div>
                                 ) : (
                                     <div className="p-2">
-                                        {/* Publicaciones */}
-                                        {publicacionesResultado.length > 0 && (
+                                        {/* noticias */}
+                                        {noticiasResultado.length > 0 && (
                                             <div className="mb-2">
                                                 <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase bg-gray-50 sticky top-0">
-                                                    Publicaciones (
+                                                    Noticias (
                                                     {
-                                                        publicacionesResultado.length
+                                                        noticiasResultado.length
                                                     }
                                                     )
                                                 </div>
-                                                {publicacionesResultado.map(
+                                                {noticiasResultado.map(
                                                     (pub) => (
                                                         <button
                                                             key={`pub-${pub.id}`}
@@ -315,7 +315,7 @@ export default function BarraBusqueda({
                                                             onClick={() =>
                                                                 handleResultClick(
                                                                     pub,
-                                                                    "publicacion"
+                                                                    "noticia"
                                                                 )
                                                             }
                                                             className="w-full text-left px-3 py-3 hover:bg-blue-50 rounded transition-colors border-b border-gray-100 last:border-0"

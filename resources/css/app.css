@@ -1,6 +1,12 @@
+@import url('https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700,800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+h3, p, span, button {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
 
 @layer components {
     /*guestLayout */

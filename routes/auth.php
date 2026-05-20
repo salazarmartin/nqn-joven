@@ -17,6 +17,8 @@ Route::middleware('guest')->group(function () {
 
     Route::post('register', [RegisteredUserController::class, 'store']);
 
+    Route::get('registereduser/chequearemail/{email}', [RegisteredUserController::class, 'chequearemail']);
+
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 
