@@ -30,8 +30,11 @@ class EnsureProfileIsComplete
 
         $user = $request->user();
 
-        // Los admins pasan sin restricciones de perfil
+        // Admin puro (sin perfil de app): va directo al panel
         if ($user && $user->tipo_usuario === 'admin') {
+            if ($request->is('/') || $request->routeIs('inicio')) {
+                return redirect()->route('admin.dashboard');
+            }
             return $next($request);
         }
 
@@ -56,6 +59,7 @@ class EnsureProfileIsComplete
                 $rutasPermitidas = [
                     'verification.notice',
                     'verification.verify',
+                    'verification.token',
                     'verification.send',
                     'logout'
                 ];

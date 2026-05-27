@@ -111,6 +111,10 @@ class NoticiaController extends Controller
     {
         $user = Auth::user();
 
+        if ($user->tipo_usuario === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+
         if ($user->tipo_usuario === 'persona' && !$user->persona) {
             abort(500, 'Perfil de persona no encontrado');
         }
@@ -207,7 +211,7 @@ class NoticiaController extends Controller
         // Obtener instituciones visitadas recientemente (solo para personas)
         $institucionesVisitadas = [];
         if ($user->tipo_usuario === 'persona') {
-            $institucionesVisitadas =   VisitaInstitucion::ultimasVisitadas($user->id, 5);
+            $institucionesVisitadas = VisitaInstitucion::ultimasVisitadas($user->id, 5);
         }
         $categorias = Categoria::orderBy('nombre')->get();
 
@@ -252,24 +256,105 @@ class NoticiaController extends Controller
                         'id'          => $l->id,
                         'titulo'      => $l->titulo,
                         'descripcion' => $l->url,
-                        'imagen'      => null,
+                        'imagen'      => $l->imagen ? asset('storage/' . $l->imagen) : null,
                         'url'         => $l->url,
                         'tipo'        => 'link',
                         'categoria_id'   => $l->categoria?->nombre,
                         'region_id'      => $l->region?->nombre,
-                        
+
                     ])
             )
             ->values();
 
         //$destacados = $noticias->union($eventos)->get();
 
+        $hoy = now()->toDateString();
+
+        $feed = collect()
+            // 1. Eventos próximos (fecha >= hoy, orden: más cercano primero)
+            ->concat(
+                Evento::with('categoria')->where('publicado', 1)
+                    ->where('fecha', '>=', $hoy)
+                    ->orderBy('fecha', 'asc')->take(10)->get()
+                    ->map(fn($e) => [
+                        'id'             => $e->id,
+                        'titulo'         => $e->titulo,
+                        'descripcion'    => $e->descripcion ? substr(strip_tags($e->descripcion), 0, 120) : null,
+                        'imagen'         => $e->imagen ? asset('storage/' . $e->imagen) : null,
+                        'url'            => $e->link_externo ?: '/eventos/' . $e->id,
+                        'tipo'           => 'evento',
+                        'prioridad'      => 1,
+                        'fecha_fmt'      => $e->fecha?->format('d/m/Y') . ($e->hora ? ' ' . substr($e->hora, 0, 5) . 'hs' : ''),
+                        'extra'          => $e->lugar,
+                        'categoria_id'   => $e->categoria_id,
+                        'categoria_nombre' => $e->categoria?->nombre,
+                    ])
+            )
+            // 2. Noticias recientes
+            ->concat(
+                Noticia::with('categoria')->where('publicado', 1)
+                    ->orderByDesc('created_at')->take(30)->get()
+                    ->map(fn($p) => [
+                        'id'             => $p->id,
+                        'titulo'         => $p->titulo,
+                        'descripcion'    => $p->resumen ?? substr(strip_tags($p->contenido ?? ''), 0, 120),
+                        'imagen'         => $p->imagen ? asset('storage/' . $p->imagen) : null,
+                        'url'            => '/noticias/' . $p->id,
+                        'tipo'           => 'noticia',
+                        'prioridad'      => 2,
+                        'fecha_fmt'      => $p->created_at?->format('d/m/Y'),
+                        'extra'          => null,
+                        'categoria_id'   => $p->categoria_id,
+                        'categoria_nombre' => $p->categoria?->nombre,
+                    ])
+            )
+            // 3. Links (recursos estáticos)
+            ->concat(
+                \App\Models\Link::with('categoria')->where('activo', 1)
+                    ->orderBy('orden')->take(15)->get()
+                    ->map(fn($l) => [
+                        'id'             => $l->id,
+                        'titulo'         => $l->titulo,
+                        'descripcion'    => $l->descripcion,
+                        'imagen'         => $l->imagen ? asset('storage/' . $l->imagen) : null,
+                        'url'            => $l->url,
+                        'tipo'           => 'link',
+                        'prioridad'      => 3,
+                        'fecha_fmt'      => null,
+                        'extra'          => $l->url,
+                        'categoria_id'   => $l->categoria_id,
+                        'categoria_nombre' => $l->categoria?->nombre,
+                    ])
+            )
+            // 4. Eventos pasados (al final)
+            ->concat(
+                Evento::with('categoria')->where('publicado', 1)
+                    ->where('fecha', '<', $hoy)
+                    ->orderByDesc('fecha')->take(5)->get()
+                    ->map(fn($e) => [
+                        'id'             => $e->id,
+                        'titulo'         => $e->titulo,
+                        'descripcion'    => $e->descripcion ? substr(strip_tags($e->descripcion), 0, 120) : null,
+                        'imagen'         => $e->imagen ? asset('storage/' . $e->imagen) : null,
+                        'url'            => $e->link_externo ?: '/eventos/' . $e->id,
+                        'tipo'           => 'evento',
+                        'prioridad'      => 4,
+                        'fecha_fmt'      => $e->fecha?->format('d/m/Y'),
+                        'extra'          => $e->lugar,
+                        'categoria_id'   => $e->categoria_id,
+                        'categoria_nombre' => $e->categoria?->nombre,
+                    ])
+            )
+            ->sortBy('prioridad')
+            ->values();
+
         return Inertia::render('Inicio', [
             'noticias' => $noticias,
             'categorias' => $categorias,
             'destacados' => $destacados,
+            'feed' => $feed,
             'userType' => $user->tipo_usuario,
-            'regionNombre' => $user->persona->region->nombre,
+            'regionNombre' => $user->persona?->region?->nombre ?? $user->institucion?->region?->nombre,
             'institucionesVisitadas' => $institucionesVisitadas,
         ]);
     }
@@ -329,11 +414,11 @@ class NoticiaController extends Controller
 
         if ($user->tipo_usuario === 'persona') {
             $noticia->user_has_liked = $noticia->likes->contains(function ($like) use ($user) {
-                return $like->perf_persona_id === $user->persona->id;
+                return $like->perf_persona_id == $user->persona->id;
             });
         } else {
             $noticia->user_has_liked = $noticia->likes->contains(function ($like) use ($user) {
-                return $like->perf_institucion_id === $user->institucion->id;
+                return $like->perf_institucion_id == $user->institucion->id;
             });
         }
 

@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use App\Models\Like;
+use App\Models\User;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -21,16 +22,21 @@ class LikeCreado implements ShouldBroadcast
     {
         $this->like = $like;
 
-        // 👇 CAMBIAR TODO ESTO
+        $this->receptorId = null;
         // Determinar el receptor según el tipo de target
         if ($like->target_tipo === 'noticia') {
             $noticia = $like->noticia;
-            $this->receptorId = $noticia->institucion->user->id;
+            if($noticia->admin_id){
+                    $duenoNoticia = User::where('id','=',$noticia->admin_id)->get();
+                    if(count($duenoNoticia)>0)
+                        $this->receptorId = $duenoNoticia[0]->id;
+            }
+            
             
             $usuarioQueHizoLike = $like->persona->user ?? $like->institucion->user;
             
             if ($usuarioQueHizoLike && $usuarioQueHizoLike->id !== $this->receptorId) {
-                $noticia->institucion->user->notify(new LikeCreadoNotification($like));
+                $duenoNoticia[0]->notify(new LikeCreadoNotification($like));
             }
             
         } elseif ($like->target_tipo === 'comentario') {

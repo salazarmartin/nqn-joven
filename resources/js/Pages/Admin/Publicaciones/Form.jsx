@@ -1,11 +1,12 @@
 import AdminLayout from "@/Layouts/AdminLayout";
 import { useForm, Link } from "@inertiajs/react";
-import { ArrowLeft, Upload } from "lucide-react";
+import { ArrowLeft, Upload, Trash2 } from "lucide-react";
 
 export default function PublicacionForm({ noticia, regiones, categorias }) {
     const isEditing = !!noticia;
 
-    const { data, setData, post, put, processing, errors } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
+        _method:      isEditing ? "put" : "post",
         titulo:       noticia?.titulo       ?? "",
         contenido:    noticia?.contenido    ?? "",
         resumen:      noticia?.resumen      ?? "",
@@ -14,24 +15,17 @@ export default function PublicacionForm({ noticia, regiones, categorias }) {
         destacado:    noticia?.destacado    ?? false,
         region_id:    noticia?.region_id    ?? "",
         categoria_id: noticia?.categoria_id ?? "",
-        imagen:       noticia?.imagen     ?? "",
+        imagen:        null,
+        remove_imagen: false,
     });
 
     const handleSubmit = (e) => {
         e.preventDefault();
         if (isEditing) {
-            put(route("admin.noticias.update", noticia.id));
+            post(route("admin.noticias.update", noticia.id));
         } else {
             post(route("admin.noticias.store"));
         }
-    };
-
-    const toggleCategoria = (id) => {
-        const current = data.categorias ?? [];
-        setData(
-            "categorias",
-            current.includes(id) ? current.filter((c) => c !== id) : [...current, id]
-        );
     };
 
     return (
@@ -95,12 +89,31 @@ export default function PublicacionForm({ noticia, regiones, categorias }) {
 
                         <Card title="Imagen de portada">
                             <Field label="Imagen" error={errors.imagen}>
-                                {isEditing && noticia.imagen && (
-                                    <img
-                                        src={`/storage/${noticia.imagen}`}
-                                        alt="Imagen actual"
-                                        className="w-full h-48 object-cover rounded-lg mb-3"
-                                    />
+                                {isEditing && noticia.imagen && !data.remove_imagen && (
+                                    <div className="relative mb-3">
+                                        <img
+                                            src={`/storage/${noticia.imagen}`}
+                                            alt="Imagen actual"
+                                            className="w-full h-48 object-cover rounded-lg"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setData("remove_imagen", true)}
+                                            className="absolute top-2 right-2 bg-red-600 text-white p-1.5 rounded-lg hover:bg-red-700 transition-colors"
+                                            title="Quitar imagen"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                )}
+                                {data.remove_imagen && (
+                                    <div className="flex items-center gap-2 mb-3 text-sm text-red-500 bg-red-50 px-3 py-2 rounded-lg">
+                                        <Trash2 className="w-4 h-4" />
+                                        La imagen será eliminada al guardar.
+                                        <button type="button" onClick={() => setData("remove_imagen", false)} className="ml-auto underline">
+                                            Deshacer
+                                        </button>
+                                    </div>
                                 )}
                                 <label className="flex flex-col items-center gap-2 border-2 border-dashed border-gray-200 rounded-lg p-6 cursor-pointer hover:border-[#23025d] transition-colors">
                                     <Upload className="w-8 h-8 text-gray-300" />
@@ -111,7 +124,7 @@ export default function PublicacionForm({ noticia, regiones, categorias }) {
                                         type="file"
                                         accept="image/*"
                                         className="sr-only"
-                                        onChange={(e) => setData("imagen", e.target.files[0])}
+                                        onChange={(e) => { setData("imagen", e.target.files[0]); setData("remove_imagen", false); }}
                                     />
                                 </label>
                             </Field>

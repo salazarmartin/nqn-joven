@@ -1,3 +1,5 @@
+import { Head } from "@inertiajs/react";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import InputError from "@/Components/InputError";
 import InputLabel from "@/Components/InputLabel";
 import PrimaryButton from "@/Components/PrimaryButton";
@@ -7,11 +9,12 @@ import TextInput from "@/Components/TextInput";
 import { useForm, usePage } from "@inertiajs/react";
 import { Transition } from "@headlessui/react";
 import toast from "react-hot-toast";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { geocodeDireccion, validarCoordenadasNeuquen, ciudadesNeuquen } from "@/utils/geocodingUtils";
 
 export default function EditarPerfilInstitucion({ className = "", onCancel }) {
     const { props } = usePage();
+    const auth = props.auth;
     const institucion = props.institucion || {};
     const regiones = props.regiones;
     const [validandoDireccion, setValidandoDireccion] = useState(false);
@@ -36,16 +39,6 @@ export default function EditarPerfilInstitucion({ className = "", onCancel }) {
             descripcion: institucion.descripcion || "",
             ano_fundacion: institucion.ano_fundacion || "",
         });
-
-    // Log para debugging - ver valores iniciales
-    useEffect(() => {
-        console.log("📍 Valores iniciales de la institución:", {
-            direccion: institucion.direccion,
-            ciudad: institucion.ciudad,
-            latitud: institucion.latitud,
-            longitud: institucion.longitud,
-        });
-    }, []);
 
     const validarDireccionCompleta = async () => {
         if (!data.direccion || !data.ciudad) {
@@ -79,8 +72,6 @@ export default function EditarPerfilInstitucion({ className = "", onCancel }) {
                         lat: resultado.lat,
                         lng: resultado.lng,
                     };
-                    
-                    console.log("✅ Nuevas coordenadas obtenidas:", nuevasCoordenadas);
                     
                     setCoordenadasNuevas(nuevasCoordenadas);
                     setDireccionValida(true);
@@ -172,13 +163,6 @@ export default function EditarPerfilInstitucion({ className = "", onCancel }) {
             return;
         }
 
-        // Log para debugging
-        console.log("📤 Enviando datos al servidor:", {
-            ...data,
-            latitud: coordenadasNuevas ? coordenadasNuevas.lat : data.latitud,
-            longitud: coordenadasNuevas ? coordenadasNuevas.lng : data.longitud,
-        });
-
         const toastId = toast.loading("Actualizando perfil...");
 
         patch(route("profile.institucion.update"), {
@@ -186,9 +170,6 @@ export default function EditarPerfilInstitucion({ className = "", onCancel }) {
             onSuccess: (page) => {
                 toast.dismiss(toastId);
                 toast.success("Perfil actualizado correctamente.");
-                
-                console.log("✅ Actualización exitosa. Nuevos datos:", page.props.institucion);
-                
                 // Reset estados de validación
                 setDireccionValida(null);
                 setMensajeValidacion("");
@@ -248,21 +229,23 @@ export default function EditarPerfilInstitucion({ className = "", onCancel }) {
     };
 
     return (
-        <section className={`${className} w-full`}>
-            <header>
-                <h2 className="text-lg font-medium text-gray-900 dark:text-gray-200">
-                    Datos institucionales
-                </h2>
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    Actualiza los datos de tu institución.
-                </p>
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    Para actualizar su correo electrónico, comuníquese con el
-                    soporte técnico.
-                </p>
-            </header>
+        <AuthenticatedLayout user={auth.user}>
+            <Head title="Editar datos institucionales" />
 
-            <form onSubmit={submit} className="mt-6 space-y-6">
+            <div className="max-w-2xl mx-auto px-4 pb-10 relative z-10">
+                <div className="mb-4">
+                    <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                        Editar datos institucionales
+                    </h1>
+                </div>
+
+        <section className={`${className} w-full`}>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h2 className="text-base font-semibold text-gray-700 dark:text-gray-100 border-b border-gray-100 dark:border-gray-700 pb-3 mb-5">
+                Información institucional
+            </h2>
+
+            <form onSubmit={submit} className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     
                     <div>
@@ -708,6 +691,9 @@ export default function EditarPerfilInstitucion({ className = "", onCancel }) {
                     </Transition>
                 </div>
             </form>
+            </div>
         </section>
+        </div>
+        </AuthenticatedLayout>
     );
 }

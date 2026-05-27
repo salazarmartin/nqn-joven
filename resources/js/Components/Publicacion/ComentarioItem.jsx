@@ -14,6 +14,7 @@ import PersonaProfileModal from "@/Components/ModalPersona/PersonaProfileModal";
 export default function ComentarioItem({
     comentario,
     userType,
+    tipo,
     currentUserId,
     noticiaInstitucionId,
     level = 0,
@@ -133,11 +134,23 @@ export default function ComentarioItem({
         const loadingToast = toast.loading("Enviando respuesta...");
 
         try {
-            const response = await axios.post("/comentarios", {
-                noticia_id: comentario.noticia_id,
-                contenido: replyText,
-                coment_padre_id: comentario.id,
-            });
+            if(tipo=="noticia"){
+                const response = await axios.post("/comentarios", {
+                    noticia_id: comentario.noticia_id,
+                    tipo:tipo,
+                    contenido: replyText,
+                    coment_padre_id: comentario.id,
+                });
+        }else{
+            if(tipo=="evento"){
+                const response = await axios.post("/comentarios", {
+                    noticia_id: comentario.evento_id,
+                    tipo:tipo,
+                    contenido: replyText,
+                    coment_padre_id: comentario.id,
+                });
+            }
+        }
 
             if (response.data.success) {
                 toast.dismiss(loadingToast);
@@ -182,7 +195,7 @@ export default function ComentarioItem({
                 }
             } else {
                 const errorMsg =
-                    "Hubo un error al publicar tu respuesta. Por favor, inténtalo de nuevo.";
+                    "Puede que no se haya publicado tu respuesta.";
                 setReplyErrorMessage(errorMsg);
                 toast.error("Error de conexión. Inténtalo de nuevo.");
             }

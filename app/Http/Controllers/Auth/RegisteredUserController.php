@@ -47,17 +47,18 @@ class RegisteredUserController extends Controller
             'tipo_usuario' => 'required|in:persona,institucion'
         ]);
 
-        // Crear usuario con datos minimos
-        $user = User::create([
-            'email' => $request->email,
+        // Crear usuario con datos mínimos
+        $user = new User([
+            'email'    => $request->email,
             'password' => Hash::make($request->password),
-            'tipo_usuario' => $request->tipo_usuario,
-            'estado' => 'pendiente_verif',
-            'nombre' => ' ',
+            'nombre'   => ' ',
             'telefono' => ' ',
-            'ciudad' => ' ',
-            'provincia' => ' ',
+            'ciudad'   => ' ',
+            'provincia'=> ' ',
         ]);
+        $user->tipo_usuario = $request->tipo_usuario;
+        $user->estado       = 'pendiente_verif';
+        $user->save();
 
         event(new Registered($user));
 

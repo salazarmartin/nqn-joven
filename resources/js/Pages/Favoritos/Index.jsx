@@ -122,19 +122,7 @@ export default function Favoritos({ auth, favoritos, userType }) {
                         {noticiasAMostrar.length === 0 &&
                         noticiasFiltradas === null ? (
                             <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-8 text-center border border-gray-200 dark:border-gray-700">
-                                <svg
-                                    className="mx-auto h-12 w-12 text-gray-400 mb-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
-                                    />
-                                </svg>
+                                <img src="/images/iconos/amancay rosa.png" alt="" aria-hidden="true" className="mx-auto h-16 w-16 object-contain mb-4 opacity-60" />
                                 <p className="text-gray-500 dark:text-gray-300 text-lg mb-2">
                                     No tenés noticias guardadas todavía.
                                 </p>
@@ -143,7 +131,7 @@ export default function Favoritos({ auth, favoritos, userType }) {
                                 </p>
                                 <Link
                                     href="/inicio"
-                                    className="mt-3 inline-block px-4 py-2 bg-edu-dark text-white rounded-lg hover:bg-gray-800 font-medium dark:bg-gray-600 dark:hover:bg-gray-700 transition-colors"
+                                    className="mt-3 inline-block px-4 py-2 bg-[#5d4dff] text-white rounded-lg hover:bg-[#4a3aee] font-medium transition-colors"
                                 >
                                     Explorar noticias
                                 </Link>
@@ -151,19 +139,7 @@ export default function Favoritos({ auth, favoritos, userType }) {
                         ) : noticiasAMostrar.length === 0 &&
                           noticiasFiltradas !== null ? (
                             <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-8 text-center">
-                                <svg
-                                    className="mx-auto h-12 w-12 text-gray-400 mb-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                                    />
-                                </svg>
+                                <img src="/images/iconos/huella naranja.png" alt="" aria-hidden="true" className="mx-auto h-14 w-14 object-contain mb-4 opacity-50" />
                                 <p className="text-gray-500 text-lg mb-2">
                                     No se encontraron resultados
                                 </p>

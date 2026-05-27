@@ -12,7 +12,7 @@ class Link extends Model
     protected $table = 'links_interes';
 
     protected $fillable = [
-        'titulo', 'descripcion', 'icono', 'url', 'activo', 'destacado', 'orden', 'region_id', 'categoria_id',
+        'titulo', 'descripcion', 'icono', 'imagen', 'url', 'activo', 'destacado', 'orden', 'region_id', 'categoria_id',
     ];
 
     protected $casts = [
@@ -28,6 +28,28 @@ class Link extends Model
     public function categoria()
     {
         return $this->belongsTo(Categoria::class);
+    }
+
+    
+    public function likes()
+    {
+        return $this->hasMany(Like::class, 'target_id')
+            ->where('target_tipo', 'link');
+    }
+
+    public function favoritos()
+    {
+        return $this->hasMany(Favorito::class, 'link_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function comentarios()
+    {
+        return $this->hasMany(ComentLink::class);
     }
 
 }

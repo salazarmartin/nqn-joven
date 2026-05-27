@@ -1,3 +1,5 @@
+
+
 import { useEffect } from "react";
 import InputError from "@/Components/InputError";
 import PrimaryButton from "@/Components/PrimaryButton";
@@ -17,7 +19,11 @@ export default function ActualizarIntereses({
     });
 
     useEffect(() => {
-        setData("interests", currentInterests);
+        // Normalizar: si vienen objetos {id, nombre}, convertirlos a strings
+        const interesesNormalizados = currentInterests.map(i =>
+            typeof i === "string" ? i : i.nombre
+        );
+        setData("interests", interesesNormalizados);
     }, [currentInterests]);
 
     const toggleInterest = (interest) => {
@@ -43,7 +49,6 @@ export default function ActualizarIntereses({
     const submit = (e) => {
         e.preventDefault();
 
-        // Validar que haya al menos un interés
         if (data.interests.length === 0) {
             toast.error("Debes seleccionar al menos un interés");
             return;
@@ -67,12 +72,15 @@ export default function ActualizarIntereses({
     };
 
     const handleCancel = () => {
-        setData("interests", currentInterests);
+        const interesesNormalizados = currentInterests.map(i =>
+            typeof i === "string" ? i : i.nombre
+        );
+        setData("interests", interesesNormalizados);
         if (onCancel) onCancel();
     };
 
     return (
-        <section className={`${className} w-full`}>
+        <section className={`${className} w-full mb-6`}>
             <header className="mb-4">
                 <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                     Tus intereses
@@ -84,7 +92,7 @@ export default function ActualizarIntereses({
             </header>
 
             <form onSubmit={submit} className="space-y-6">
-                <div className="bg-blue-50 p-6 rounded-lg border-2 border-blue-200 dark:bg-edu-dark">
+                <div className="mb-4 bg-blue-50 p-6 rounded-lg border-2 border-[#5d4dff] dark:bg-black">
                     <div className="flex items-center justify-between mb-4">
                         <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                             Selecciona tus intereses
@@ -93,14 +101,14 @@ export default function ActualizarIntereses({
                             className={`text-lg font-bold ${
                                 data.interests.length >= MAX_INTERESES_USUARIO
                                     ? "text-red-600"
-                                    : "text-blue-600 dark:text-gray-300"
+                                    : "text-[#5d4dff] dark:text-gray-300"
                             }`}
                         >
                             {data.interests.length}/{MAX_INTERESES_USUARIO}
                         </span>
                     </div>
 
-                    {/* Categorías disponibles para seleccionar */}
+                    {/* Categorías disponibles */}
                     <div className="mb-4">
                         <p className="text-sm font-medium text-gray-700 mb-2 dark:text-gray-400">
                             Categorías disponibles:
@@ -117,7 +125,7 @@ export default function ActualizarIntereses({
                                         data.interests.length >=
                                         MAX_INTERESES_USUARIO
                                     }
-                                    className="px-3 py-1.5 text-sm bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="px-3 py-1.5 text-sm bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     + {cat}
                                 </button>
@@ -126,7 +134,7 @@ export default function ActualizarIntereses({
                     </div>
 
                     {/* Intereses seleccionados */}
-                    {data.interests.length > 0 && (
+                    {data.interests.length > 0 ? (
                         <div>
                             <p className="text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">
                                 Tus intereses seleccionados:
@@ -135,7 +143,7 @@ export default function ActualizarIntereses({
                                 {data.interests.map((interest) => (
                                     <span
                                         key={interest}
-                                        className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white dark:bg-gray-900 dark:text-gray-200 rounded-lg text-sm shadow-md"
+                                        className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#5d4dff] text-white dark:bg-[#5d4dff] dark:text-white rounded-lg text-sm shadow-md"
                                     >
                                         {interest}
                                         <button
@@ -143,7 +151,7 @@ export default function ActualizarIntereses({
                                             onClick={() =>
                                                 toggleInterest(interest)
                                             }
-                                            className="hover:bg-blue-700 dark:hover:bg-gray-5yt00 rounded-full p-0.5 transition-colors"
+                                            className="hover:bg-blue-700 dark:hover:bg-gray-500 rounded-full p-0.5 transition-colors"
                                         >
                                             <X className="w-3.5 h-3.5" />
                                         </button>
@@ -151,9 +159,7 @@ export default function ActualizarIntereses({
                                 ))}
                             </div>
                         </div>
-                    )}
-
-                    {data.interests.length === 0 && (
+                    ) : (
                         <p className="text-sm text-gray-500 dark:text-gray-300 italic">
                             No has seleccionado ningún interés aún.
                         </p>

@@ -1,6 +1,6 @@
 import AdminLayout from "@/Layouts/AdminLayout";
 import { Link, router, useForm } from "@inertiajs/react";
-import { Search, Users, UserCheck, Building2, Clock, Ban, Eye } from "lucide-react";
+import { Search, Users, UserCheck, Building2, Clock, Ban, Eye, ShieldCheck, Plus } from "lucide-react";
 
 const ESTADO_BADGE = {
     activo:               "bg-green-100 text-green-700",
@@ -42,9 +42,18 @@ export default function UsuariosIndex({ usuarios, filtros, totales }) {
 
     return (
         <AdminLayout title="Usuarios">
-            <div className="mb-6">
-                <h2 className="text-xl font-bold text-gray-800">Usuarios</h2>
-                <p className="text-sm text-gray-500">Gestioná todos los usuarios de la plataforma</p>
+            <div className="flex items-center justify-between mb-6">
+                <div>
+                    <h2 className="text-xl font-bold text-gray-800">Usuarios</h2>
+                    <p className="text-sm text-gray-500">Gestioná todos los usuarios de la plataforma</p>
+                </div>
+                <Link
+                    href={route("admin.usuarios.create-admin")}
+                    className="flex items-center gap-2 bg-[#23025d] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#3a0499] transition-colors"
+                >
+                    <Plus className="w-4 h-4" />
+                    Nuevo admin
+                </Link>
             </div>
 
             {/* Tarjetas resumen */}

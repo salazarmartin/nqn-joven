@@ -1,6 +1,6 @@
 import AdminLayout from "@/Layouts/AdminLayout";
 import { Link, router } from "@inertiajs/react";
-import { Plus, Pencil, Trash2, Eye, EyeOff, MapPin, Calendar } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, MapPin, Calendar, Users } from "lucide-react";
 
 
 export function DateDisplay({fechaEntrada}) {
@@ -85,6 +85,15 @@ export default function EventosIndex({ eventos }) {
                                     </td>
                                     <td className="px-5 py-4">
                                         <div className="flex items-center justify-end gap-2">
+                                            {ev.inscripcion_habilitada && (
+                                                <Link
+                                                    href={route("admin.eventos.inscriptos", ev.id)}
+                                                    className="p-1.5 text-gray-400 hover:text-[#5d4dff] hover:bg-indigo-50 rounded-lg transition-colors"
+                                                    title="Ver inscriptos"
+                                                >
+                                                    <Users className="w-4 h-4" />
+                                                </Link>
+                                            )}
                                             <Link
                                                 href={route("admin.eventos.edit", ev.id)}
                                                 className="p-1.5 text-gray-400 hover:text-[#23025d] hover:bg-purple-50 rounded-lg transition-colors"

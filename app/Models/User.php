@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 use App\Notifications\CustomVerifyEmail;
 
 class User extends Authenticatable implements MustVerifyEmail
@@ -26,8 +27,6 @@ class User extends Authenticatable implements MustVerifyEmail
         'telefono',
         'ciudad',
         'provincia',
-        'tipo_usuario',
-        'estado',
     ];
 
     /**
@@ -60,6 +59,18 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function sendEmailVerificationNotification()
     {
+        $key = 'email_verification_sent_' . $this->id;
+
+        if (cache()->has($key)) {
+            return;
+        }
+
+        cache()->put($key, true, now()->addMinutes(2));
+
+        $token = Str::random(64);
+        $this->email_verification_token = $token;
+        $this->saveQuietly();
+
         $this->notify(new CustomVerifyEmail);
     }
 
@@ -112,4 +123,5 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasOne(Evento::class);
     }
+
 }

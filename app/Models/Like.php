@@ -28,10 +28,24 @@ class Like extends Model
         return $this->belongsTo(Noticia::class, 'target_id');
     }
 
+    public function evento()
+    {
+        return $this->belongsTo(Evento::class, 'target_id');
+    }
+
+    public function link()
+    {
+        return $this->belongsTo(Link::class, 'target_id');
+    }
 
     public function comentario()
     {
-        return $this->belongsTo(ComentNoticia::class, 'target_id');
+        if($this->target_tipo == "noticia")
+            return $this->belongsTo(ComentNoticia::class, 'target_id');
+        if($this->target_tipo == "evento")
+            return $this->belongsTo(ComentEvento::class, 'target_id');
+        if($this->target_tipo == "link")
+            return $this->belongsTo(ComentLink::class, 'target_id');
     }
 
 

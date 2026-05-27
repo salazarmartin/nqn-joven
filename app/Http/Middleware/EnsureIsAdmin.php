@@ -10,7 +10,9 @@ class EnsureIsAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (!$request->user() || $request->user()->tipo_usuario !== 'admin') {
+        $user = $request->user();
+
+        if (!$user || $user->tipo_usuario !== 'admin' || $user->estado !== 'activo') {
             abort(403, 'Acceso denegado.');
         }
 

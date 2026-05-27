@@ -14,7 +14,7 @@ class RespuestaComentarioEvent implements ShouldBroadcast
 
     public $comentario;
 
-    public function __construct(ComentNoticia $comentario)
+    public function __construct($comentario)
     {
         // Cargamos relaciones necesarias, incluyendo la del comentario padre y sus usuarios
         $this->comentario = $comentario->load([
@@ -49,20 +49,40 @@ class RespuestaComentarioEvent implements ShouldBroadcast
         $usuario = $this->comentario->persona?->user 
                 ?? $this->comentario->institucion?->user;
 
-        return [
-            'comentario' => [
-                'id' => $this->comentario->id,
-                'noticia_id' => $this->comentario->noticia_id,
-                'coment_padre_id' => $this->comentario->coment_padre_id,
-                'contenido' => $this->comentario->contenido,
-                'usuario' => [
-                    'id' => $usuario->id ?? null,
-                    'nombre' => $usuario->nombre ?? 'Usuario desconocido',
-                    'foto' => $usuario?->profile_photo_path 
-                              ? asset('storage/'.$usuario->profile_photo_path)
-                              : '/storage/profile-photos/default-avatar.webp',
+        if(get_class($this->comentario) == "App\Models\ComentNoticia"){
+            return [
+                'comentario' => [
+                    'id' => $this->comentario->id,
+                    'noticia_id' => $this->comentario->noticia_id,
+                    'coment_padre_id' => $this->comentario->coment_padre_id,
+                    'contenido' => $this->comentario->contenido,
+                    'usuario' => [
+                        'id' => $usuario->id ?? null,
+                        'nombre' => $usuario->nombre ?? 'Usuario desconocido',
+                        'foto' => $usuario?->profile_photo_path 
+                                ? asset('storage/'.$usuario->profile_photo_path)
+                                : '/storage/profile-photos/default-avatar.webp',
+                    ],
                 ],
-            ],
-        ];
+            ];
+        }else{
+            if(get_class($this->comentario) == "App\Models\ComentEvento"){
+                return [
+                    'comentario' => [
+                        'id' => $this->comentario->id,
+                        'evento_id' => $this->comentario->evento_id,
+                        'coment_padre_id' => $this->comentario->coment_padre_id,
+                        'contenido' => $this->comentario->contenido,
+                        'usuario' => [
+                            'id' => $usuario->id ?? null,
+                            'nombre' => $usuario->nombre ?? 'Usuario desconocido',
+                            'foto' => $usuario?->profile_photo_path 
+                                    ? asset('storage/'.$usuario->profile_photo_path)
+                                    : '/storage/profile-photos/default-avatar.webp',
+                        ],
+                    ],
+                ];
+            }
+        }
     }
 }

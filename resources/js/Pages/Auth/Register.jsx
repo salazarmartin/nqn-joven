@@ -53,14 +53,11 @@ export default function Register() {
                 
 
                 const data = await response.json();
-                console.log(data);
-                console.log("er:"+clientErrors.email);
                 if (clientErrors.email && value.trim() !== "") {
                         setClientErrors((prev) => ({
                             ...prev,
                             email: null,
                         }));
-                        console.log("entro"); 
                     }
                 if(data.sepuede==false){
                     
@@ -77,7 +74,6 @@ export default function Register() {
                 
             }
             
-        console.log("var:"+nosepuedeconesemail);
     };
 
     const handlePasswordChange = (e) => {
@@ -141,7 +137,6 @@ export default function Register() {
             onFinish: () => reset("password", "password_confirmation"),
         });
     };
-console.log("anteul-"+nosepuedeconesemail);
     return (
         <GuestLayout>
             <Head title="Register" />
@@ -218,7 +213,6 @@ console.log("anteul-"+nosepuedeconesemail);
                         />
                     </div>
                 )}
-{console.log('-'+nosepuedeconesemail)}
                 {
                 nosepuedeconesemail &&
                     !clientErrors.email &&

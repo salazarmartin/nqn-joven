@@ -7,6 +7,7 @@ use App\Models\Categoria;
 use App\Models\Link;
 use App\Models\Region;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class LinkController extends Controller
@@ -37,12 +38,17 @@ class LinkController extends Controller
             'descripcion'  => 'nullable|string',
             'url'          => 'required|url|max:255',
             'icono'        => 'nullable|string|max:100',
+            'imagen'       => 'nullable|image|max:2048',
             'activo'       => 'boolean',
             'destacado'    => 'boolean',
             'orden'        => 'integer|min:0',
             'region_id'    => 'nullable|exists:regiones,id',
             'categoria_id' => 'nullable|exists:categorias,id',
         ]);
+
+        if ($request->hasFile('imagen')) {
+            $data['imagen'] = $request->file('imagen')->store('links', 'public');
+        }
 
         Link::create($data);
 
@@ -66,12 +72,22 @@ class LinkController extends Controller
             'descripcion'  => 'nullable|string',
             'url'          => 'required|url|max:255',
             'icono'        => 'nullable|string|max:100',
+            'imagen'       => 'nullable|image|max:2048',
             'activo'       => 'boolean',
             'destacado'    => 'boolean',
             'orden'        => 'integer|min:0',
             'region_id'    => 'nullable|exists:regiones,id',
             'categoria_id' => 'nullable|exists:categorias,id',
         ]);
+
+        if ($request->hasFile('imagen')) {
+            if ($link->imagen) {
+                Storage::disk('public')->delete($link->imagen);
+            }
+            $data['imagen'] = $request->file('imagen')->store('links', 'public');
+        } else {
+            unset($data['imagen']);
+        }
 
         $link->update($data);
 

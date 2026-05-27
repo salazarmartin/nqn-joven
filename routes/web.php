@@ -13,6 +13,7 @@ use App\Http\Controllers\Publicaciones\FavoritoController;
 use App\Http\Controllers\Publicaciones\ComentarioController;
 use App\Http\Controllers\Chats\ChatController;
 use App\Http\Controllers\EventoController;
+use App\Http\Controllers\LinkController;
 use App\Http\Controllers\InstitucionController;
 use App\Http\Controllers\InstitucionMaterialController;
 use App\Http\Controllers\BusquedaController;
@@ -87,6 +88,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/profile/photo', [ProfileController::class, 'destroyPhoto'])->name('profile.photo.destroy');
     Route::post('/profile/interests', [ProfileController::class, 'updateInterests'])->name('profile.interests.update');
 
+    Route::get('/profile/editpersona', [ProfileController::class, 'editpersona'])->name('profile.editpersona');
+
+    Route::get('/profile/cambiarcontrasena', [ProfileController::class, 'cambiarcontrasena'])->name('profile.cambiarcontrasena');
+
     // actualizar perfil persona
     Route::patch('/profile/persona', [ProfileController::class, 'updatePersona'])
         ->middleware(['auth'])
@@ -124,6 +129,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // eventos
     Route::get('/eventos/{id}', [EventoController::class, 'show'])->name('eventos.show');
+    Route::post('/eventos/{id}/inscribirse', [EventoController::class, 'inscribirse'])->name('eventos.inscribirse');
+
+    // links
+    Route::get('/links/{id}', [LinkController::class, 'show'])->name('links.show');
 
     // likes
     Route::post('/likes/toggle', [LikeController::class, 'toggle'])->name('likes.toggle');

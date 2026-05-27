@@ -40,7 +40,8 @@ class VerifyEmailController extends Controller
             event(new Verified($user));
 
             // Cambiar estado a 'pendiente_datos'
-            $user->update(['estado' => 'pendiente_datos']);
+            $user->estado = 'pendiente_datos';
+            $user->save();
         }
 
         // Redirigir a completar datos

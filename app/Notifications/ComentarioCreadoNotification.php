@@ -10,7 +10,7 @@ class ComentarioCreadoNotification extends Notification
 {
     public $comentario;
 
-    public function __construct(ComentNoticia $comentario)
+    public function __construct($comentario)
     {
         $this->comentario = $comentario;
     }
@@ -34,14 +34,27 @@ class ComentarioCreadoNotification extends Notification
             'foto' => '/storage/profile-photos/default-avatar.webp',
         ];
 
-        return [
-            'comentario_id' => $this->comentario->id,
-            'noticia_id' => $this->comentario->noticia_id,
-            'contenido' => $this->comentario->contenido,
-            'usuario' => $usuarioArray, // <<--- aquí el usuario aplanado
-            'tipo' => 'comentario',
-            'created_at' => $this->comentario->created_at,
-        ];
+        if(get_class($this->comentario) == "App\Models\ComentNoticia"){
+            return [
+                'comentario_id' => $this->comentario->id,
+                'noticia_id' => $this->comentario->noticia_id,
+                'contenido' => $this->comentario->contenido,
+                'usuario' => $usuarioArray, // <<--- aquí el usuario aplanado
+                'tipo' => 'comentario',
+                'created_at' => $this->comentario->created_at,
+            ];
+        }else{
+            if(get_class($this->comentario) == "App\Models\ComentEvento"){
+                return [
+                    'comentario_id' => $this->comentario->id,
+                    'evento_id' => $this->comentario->evento_id,
+                    'contenido' => $this->comentario->contenido,
+                    'usuario' => $usuarioArray, // <<--- aquí el usuario aplanado
+                    'tipo' => 'comentario',
+                    'created_at' => $this->comentario->created_at,
+                ];
+            }
+        }
     }
 
 
@@ -53,24 +66,47 @@ class ComentarioCreadoNotification extends Notification
 
         \Log::info("ComentarioCreadoNotification usuario:", ['usuario' => $usuario]);
 
-        return [
-            'id' => $this->comentario->id,
-            'type' => 'App\\Notifications\\ComentarioCreadoNotification',
-            'created_at' => $this->comentario->created_at,
+        if(get_class($this->comentario) == "App\Models\ComentNoticia"){
+            return [
+                'id' => $this->comentario->id,
+                'type' => 'App\\Notifications\\ComentarioCreadoNotification',
+                'created_at' => $this->comentario->created_at,
 
-            'data' => [
-                'comentario_id' => $this->comentario->id,
-                'contenido' => $this->comentario->contenido,
-                'noticia_id' => $this->comentario->noticia_id,
-                'tipo' => 'comentario',
-                'usuario' => [
-                    'nombre' => $usuario->nombre ?? $usuario->name ?? 'Usuario desconocido',
-                    'foto' => $usuario->profile_photo_path
-                        ? asset('storage/' . $usuario->profile_photo_path)
-                        : '/storage/profile-photos/default-avatar.webp',
+                'data' => [
+                    'comentario_id' => $this->comentario->id,
+                    'contenido' => $this->comentario->contenido,
+                    'noticia_id' => $this->comentario->noticia_id,
+                    'tipo' => 'comentario',
+                    'usuario' => [
+                        'nombre' => $usuario->nombre ?? $usuario->name ?? 'Usuario desconocido',
+                        'foto' => $usuario->profile_photo_path
+                            ? asset('storage/' . $usuario->profile_photo_path)
+                            : '/storage/profile-photos/default-avatar.webp',
+                    ],
                 ],
-            ],
-        ];
+            ];
+        }else{
+            if(get_class($this->comentario) == "App\Models\ComentEvento"){
+                return [
+                    'id' => $this->comentario->id,
+                    'type' => 'App\\Notifications\\ComentarioCreadoNotification',
+                    'created_at' => $this->comentario->created_at,
+
+                    'data' => [
+                        'comentario_id' => $this->comentario->id,
+                        'contenido' => $this->comentario->contenido,
+                        'evento_id' => $this->comentario->evento_id,
+                        'tipo' => 'comentario',
+                        'usuario' => [
+                            'nombre' => $usuario->nombre ?? $usuario->name ?? 'Usuario desconocido',
+                            'foto' => $usuario->profile_photo_path
+                                ? asset('storage/' . $usuario->profile_photo_path)
+                                : '/storage/profile-photos/default-avatar.webp',
+                        ],
+                    ],
+                ];
+            }
+        }
     }
 
     public function toArray($notifiable)
@@ -92,14 +128,27 @@ class ComentarioCreadoNotification extends Notification
             'foto' => '/storage/profile-photos/default-avatar.webp',
         ];
 
-        return [
-            'comentario_id' => $this->comentario->id,
-            'noticia_id' => $this->comentario->noticia_id,
-            'contenido' => $this->comentario->contenido,
-            'usuario' => $usuarioArray, // <<--- aquí va
-            'tipo' => 'comentario',
-            'created_at' => $this->comentario->created_at,
-        ];
+        if(get_class($this->comentario) == "App\Models\ComentNoticia"){
+            return [
+                'comentario_id' => $this->comentario->id,
+                'noticia_id' => $this->comentario->noticia_id,
+                'contenido' => $this->comentario->contenido,
+                'usuario' => $usuarioArray, // <<--- aquí va
+                'tipo' => 'comentario',
+                'created_at' => $this->comentario->created_at,
+            ];
+        }else{
+            if(get_class($this->comentario) == "App\Models\ComentEvento"){
+                return [
+                    'comentario_id' => $this->comentario->id,
+                    'evento_id' => $this->comentario->evento_id,
+                    'contenido' => $this->comentario->contenido,
+                    'usuario' => $usuarioArray, // <<--- aquí va
+                    'tipo' => 'comentario',
+                    'created_at' => $this->comentario->created_at,
+                ];
+            }
+        }
     }
 
 

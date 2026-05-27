@@ -3,406 +3,271 @@ import { Head, usePage, Link } from "@inertiajs/react";
 import LoadingSpinner from "@/Components/LoadingSpinner";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
-import {
-    BookOpen,
-} from "lucide-react";
+import { Newspaper, Calendar, ExternalLink, MapPin, Clock, Search } from "lucide-react";
 
-export function DateDisplay({fechaEntrada}) {
-  
-    const fecha = new Date(fechaEntrada.replace(" ", "T"));
+const TIPOS = [
+    { id: "todos",    label: "Todos",    icon: Search },
+    { id: "noticias", label: "Noticias", icon: Newspaper },
+    { id: "eventos",  label: "Eventos",  icon: Calendar },
+    { id: "links",    label: "Links",    icon: ExternalLink },
+];
 
-    const dia = fecha.getDate().toString().padStart(2, "0");
-    const mes = (fecha.getMonth() + 1).toString().padStart(2, "0");
-    const año = fecha.getFullYear();
-
-    return dia+'/'+mes+'/'+año;
+function formatFecha(fechaStr) {
+    if (!fechaStr) return "";
+    return new Date(String(fechaStr).replace(" ", "T"))
+        .toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "2-digit" });
 }
 
-export default function Explorar({ auth}) {
+export default function Explorar({ auth }) {
     const { props } = usePage();
-    const { regiones } = props;
-    const { categorias } = props;
-    const { noticias } = props;
-    const { categoriaelegida } = props;
-    
-    const catelegida = categoriaelegida || "";
+    const regiones   = props.regiones   || [];
+    const categorias = props.categorias || [];
+    const catelegida = props.categoriaelegida || 0;
 
-    const regionesData = regiones || [];
-    const categoriasData = categorias || [];
-     
-    const [sebuscaron, setSeBuscaron] = useState("noticias");
+    const [tipo,     setTipo]     = useState("todos");
+    const [regionId, setRegionId] = useState("todas");
+    const [catId,    setCatId]    = useState(catelegida ? String(catelegida) : "todas");
+    const [loading,  setLoading]  = useState(false);
 
-    const [noticiasData, setDatosnoticias] = useState(noticias);
-    const [eventosData, setDatosEventos] = useState([]);
-    const [linksData, setDatosLinks] = useState([]);
+    const [noticiasData, setNoticiasData] = useState(props.noticias || []);
+    const [eventosData,  setEventosData]  = useState(props.eventos  || []);
+    const [linksData,    setLinksData]    = useState(props.links     || []);
 
-    const [loading, setLoading] = useState(false);
-    
-    
-    const handlebusqueda = async (event) => {
+    const buscar = async (newTipo, newRegion, newCat) => {
+        const t = newTipo   ?? tipo;
+        const r = newRegion ?? regionId;
+        const c = newCat    ?? catId;
         setLoading(true);
-
         try {
-
-            const boton = event.currentTarget;
-            
-            if (boton.classList.contains("buscar")) {
-                const todosbuscar = document.querySelectorAll("button.buscar");
-                todosbuscar.forEach(el => {
-                    el.classList.remove("seleccionado");
-                    el.classList.remove("bg-blue-900");
-                    el.classList.remove("text-white");
-                    el.classList.add("text-blue-800"); 
-                    el.classList.add("bg-gray-200");  
-                });
-                
-            } else {
-                if (boton.classList.contains("categoria")) {
-                    const todoscategoria = document.querySelectorAll("button.categoria");
-                    todoscategoria.forEach(el => {
-                        el.classList.remove("seleccionado");
-                        el.classList.remove("bg-blue-900");
-                        el.classList.remove("text-white");
-                        el.classList.add("text-blue-800"); 
-                        el.classList.add("bg-gray-200");  
-                    });
-                }else{
-                    if (boton.classList.contains("region")) {
-                        const todosregion = document.querySelectorAll("button.region");
-                        todosregion.forEach(el => {
-                            el.classList.remove("seleccionado");
-                            el.classList.remove("bg-blue-900");
-                            el.classList.remove("text-white");
-                            el.classList.add("text-blue-800"); 
-                            el.classList.add("bg-gray-200");  
-                        });
-                    }
-                }
-            }
-            boton.classList.remove("bg-gray-200");  
-            boton.classList.add("seleccionado"); 
-            boton.classList.add("text-white"); 
-            boton.classList.add("bg-blue-900");
-            
-            const buscar = document.querySelectorAll("button.buscar.seleccionado");            
-            const categoria = document.querySelectorAll("button.categoria.seleccionado");            
-            const region = document.querySelectorAll("button.region.seleccionado");            
-            
-            const url = `/notificaciones/buscarnoticias/`+buscar[0].id+`/`+categoria[0].id+`/`+region[0].id;
-            const response = await fetch(
-                url,
-                {
-                    method: "GET",
+            const tipos = t === "todos" ? ["noticias", "eventos", "links"] : [t];
+            for (const tipo of tipos) {
+                const url = `/notificaciones/buscarnoticias/${tipo}/${c}/${r}`;
+                const res = await fetch(url, {
                     headers: {
-                        
                         "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": document.querySelector(
-                            'meta[name="csrf-token"]'
-                        ).content,
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.content,
                     },
-                }
-            );
-
-
-            const data = await response.json();
-            setSeBuscaron(buscar[0].id);
-
-            if(buscar[0].id == "noticias"){
-                setDatosnoticias(data.noticias);
-            }else{
-                if(buscar[0].id == "eventos"){
-                    setDatosEventos(data.eventos);
-                }else{
-                    setDatosLinks(data.links);
-                }
+                });
+                const data = await res.json();
+                if (tipo === "noticias") setNoticiasData(data.noticias || []);
+                if (tipo === "eventos")  setEventosData(data.eventos   || []);
+                if (tipo === "links")    setLinksData(data.links       || []);
             }
-
-        } catch (error) {
-            toast.error("Error al procesar la solicitud");
-            console.error("Error al procesar la solicitud");
+        } catch {
+            toast.error("Error al buscar");
         } finally {
             setLoading(false);
         }
     };
 
+    const handleTipo = (id) => {
+        setTipo(id);
+        buscar(id, regionId, catId);
+    };
+
+    const handleRegion = (id) => {
+        setRegionId(id);
+        buscar(tipo, id, catId);
+    };
+
+    const handleCat = (id) => {
+        setCatId(id);
+        buscar(tipo, regionId, id);
+    };
+
+    const todosMezclados = [...noticiasData, ...eventosData, ...linksData]
+        .sort((a, b) => new Date(b.created_at || b.fecha || 0) - new Date(a.created_at || a.fecha || 0))
+        .map(item => ({
+            ...item,
+            _tipo: noticiasData.includes(item) ? "noticia" : eventosData.includes(item) ? "evento" : "link"
+        }));
+
     return (
-        <AuthenticatedLayout
-            user={auth.user}
-            
-        >
-            <Head title="Editar Perfil" />
-                        <div style={{margin:"-12px"}}>
-                            
+        <AuthenticatedLayout user={auth.user}>
+            <Head title="Explorar" />
+
+            {/* Barra de filtros sticky — fuera del flujo del contenido */}
+            <div className="sticky top-0 z-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-100 dark:border-gray-700 px-4 py-3 -mx-4 sm:-mx-6">
+                <div className="max-w-2xl mx-auto space-y-2.5">
+
+                    {/* Título + selector de tipo */}
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5 mr-1">
+                            <Search className="w-4 h-4 text-[#5d4dff]" />
+                            <span className="text-sm font-bold text-gray-900 dark:text-white">Explorar</span>
                         </div>
-                        <div className="">
-
-                            <div className="grid grid-cols-3 gap-0">
-                                <button id="noticias" className="buscar seleccionado text-md text-white bg-blue-900 xs:text-xs border border-blue-800 dark:border-gray-600 flex flex-col items-center"
-                                    onClick={handlebusqueda} disabled={loading}>
-                                    <p className="ml-1 mr-1 text-md xs:text-xs font-bold "> 
-                                        Noticias
-                                    </p>
+                        <div className="flex gap-1 flex-1">
+                            {TIPOS.map(({ id, label, icon: Icon }) => (
+                                <button
+                                    key={id}
+                                    onClick={() => handleTipo(id)}
+                                    disabled={loading}
+                                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold transition-all flex-1 justify-center ${
+                                        tipo === id
+                                            ? "bg-[#5d4dff] text-white"
+                                            : "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
+                                    }`}
+                                >
+                                    <Icon className="w-3.5 h-3.5" />
+                                    {label}
                                 </button>
-                                <button id="eventos" className="buscar text-blue-800 bg-gray-200 text-md xs:text-xs border border-blue-800 dark:border-gray-600 flex flex-col items-center"
-                                    onClick={handlebusqueda} disabled={loading}>
-                                    <p className="ml-1 mr-1 text-md xs:text-xs font-bold "> 
-                                        Eventos
-                                    </p>
-                                </button>
-                                <button id="links" className="buscar text-blue-800 bg-gray-200 text-md xs:text-xs border border-blue-800 dark:border-gray-600 flex flex-col items-center"
-                                    onClick={handlebusqueda} disabled={loading}>
-                                    <p className="ml-1 mr-1 text-md xs:text-xs font-bold"> 
-                                        Links
-                                    </p>
-                                </button>
-                            </div>
-
-                            
-                            <div class="my-2 flex overflow-x-auto flex-nowrap gap-2">
-                                <span style={{paddingtop:"2px"}} className="text-sm font-bold text-black dark:text-white">Regiones:</span>
-                                <button id="todas" className="region seleccionado text-white bg-blue-900 flex-none mb-2 rounded-lg border border-blue-800 dark:border-gray-600 " 
-                                    onClick={handlebusqueda} disabled={loading}>
-                                    <p className="ml-1 mr-1 text-sm xs:text-sm font-bold "> Todas</p>
-                                </button>
-                                {regionesData.length === 0 ? (
-                                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-8 text-center">
-                                            <p className="text-gray-600 dark:text-gray-400">
-                                                No hay regiones cargadas
-                                            </p>
-                                        </div>
-                                    ) : (
-                                        regionesData.map((region) => (
-                                            
-                                            <button id={region.id} className="region text-blue-800 bg-gray-200 flex-none mb-2 rounded-lg border border-blue-800 dark:border-gray-600 " 
-                                                onClick={handlebusqueda} disabled={loading}>
-                                                <p className="ml-1 mr-1 text-sm xs:text-sm font-bold"> 
-                                                            {region.nombre}
-                                                        </p>
-                                            </button>
-                                        ))
-                                    )}
-                                
-                            </div>
-
-                            <div class="my-2 flex overflow-x-auto flex-nowrap gap-2">
-                                <span style={{paddingtop:"2px"}} className="text-sm font-bold text-black dark:text-white">Categorías:</span>
-                                <button id="todas" className={catelegida==0? 'text-white bg-blue-900 categoria seleccionado flex-none mb-2 rounded-lg border border-blue-800 dark:border-gray-600':'text-blue-800 bg-gray-200 categoria seleccionado flex-none mb-2 rounded-lg border border-blue-800 dark:border-gray-600'}
-                                    onClick={handlebusqueda} disabled={loading}>
-                                    <p className="ml-1 mr-1 text-sm xs:text-sm font-bold"> Todas</p>
-                                </button>
-                                {categoriasData.length === 0 ? (
-                                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-8 text-center">
-                                            <p className="text-gray-600 dark:text-gray-400">
-                                                No hay categorías cargadas
-                                            </p>
-                                        </div>
-                                    ) : (
-                                        categoriasData.map((categoria) => (
-
-                                            <button id={categoria.id} className={catelegida==categoria.id? 'text-white bg-blue-900 categoria seleccionado flex-none mb-2 rounded-lg border border-blue-800 dark:border-gray-600':'text-blue-800 bg-gray-200 categoria seleccionado flex-none mb-2 rounded-lg border border-blue-800 dark:border-gray-600'}
-                                                onClick={handlebusqueda} disabled={loading}>
-                                                <p className="ml-1 mr-1 text-sm xs:text-sm font-bold"> 
-                                                            {categoria.nombre}
-                                                        </p>
-                                            </button>
-                                        ))
-                                    )}
-                                
-                            </div>
+                            ))}
                         </div>
-                        
-                        <div >{loading && <LoadingSpinner />}</div>                        
-                        
-                        {!loading && sebuscaron == "noticias" &&
-                            <div className="mt-6 mb-4">
-                                    {noticiasData.length === 0 ? (
-                                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-8 text-center">
-                                            <p className="text-gray-600 dark:text-gray-200">
-                                                No se encontraron noticias
-                                            </p>
-                                        </div>
-                                    ) : (
-                                        noticiasData.map((noticia) => (
+                    </div>
 
-                                            <div className="h-40 bg-blue-500 mb-2 rounded-lg bg-gradient-to-b from-[#5d4dff] to-[#e2e2e2]
-  dark:from-[#5d4dff] dark:to-[#374151]" >
-                                                <div className="h-16  flex items-center grid place-items-center">
-                                                    <img
-                                                        src="/svg/header/map.svg"
-                                                        alt="NQN Jóven"
-                                                        className="h-6 w-auto"
-                                                    />
-                                                </div>
-                                                <div class="mr-1 flex justify-end">
-                                                            <p className="text-white text-xs xs:text-2xs font-bold"> 
-                                                                <DateDisplay fechaEntrada={noticia.created_at} />
-                                                            </p>
-                                                        </div>
-                                                <Link href={`/noticias/${noticia.id}`} ><div className="ml-2 h-20">
-                                                    
-                                                    <h3 className="mb-2 text-xs xs:text-2xl font-bold text-black dark:text-white">
-                                                        <b>{(noticia.titulo.length>56)? noticia.titulo.substring(0, 56) + "..." : noticia.titulo}</b>
-                                                    </h3>
-                                                    <p className="mb-1 text-xs xs:text-2xl font-bold text-gray dark:text-white">
-                                                        {(noticia.contenido.length>68)? noticia.contenido.substring(0, 68) + "..." : noticia.contenido}
-                                                    </p>
-                                                    
-                                                    <div class="flex overflow-x-auto flex-nowrap gap-1">
-                                                        <div className="my-2 max-w-fit rounded-full" style={{
-                                                            background:
-                                                            "#c4ff00",  
-                                                            
-                                                        }}>
-                                                            <p className="ml-1 mr-1 text-xs xs:text-2xs font-bold text-black"> 
-                                                                {noticia.categoria.nombre}
-                                                            </p>
-                                                        </div>
+                    {/* Regiones */}
+                    <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+                        <span className="flex-shrink-0 text-xs text-gray-400 self-center">Región:</span>
+                        <Pill label="Todas" active={regionId === "todas"} onClick={() => handleRegion("todas")} color="cyan" />
+                        {regiones.map(r => (
+                            <Pill key={r.id} label={r.nombre} active={regionId === String(r.id)} onClick={() => handleRegion(String(r.id))} color="cyan" />
+                        ))}
+                    </div>
 
-                                                        <div className="my-2 max-w-fit rounded-full" style={{
-                                                            background:
-                                                            "#00d9fa",  
-                                                            
-                                                        }}>
-                                                            <p className="ml-1 mr-1 text-xs xs:text-2xs font-bold text-black"> 
-                                                                {noticia.region.nombre}
-                                                            </p>
-                                                        </div>
-                                                        
-                                                    </div>    
-                                                </div></Link>
-                                            </div>
-                                        ))
-                                    )}
-                            </div>
-                        }
+                    {/* Categorías */}
+                    <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+                        <span className="flex-shrink-0 text-xs text-gray-400 self-center">Categoría:</span>
+                        <Pill label="Todas" active={catId === "todas"} onClick={() => handleCat("todas")} color="green" />
+                        {categorias.map(c => (
+                            <Pill key={c.id} label={c.nombre} active={catId === String(c.id)} onClick={() => handleCat(String(c.id))} color="green" />
+                        ))}
+                    </div>
+                </div>
+            </div>
 
+            <div className="max-w-2xl mx-auto px-4 pb-10 pt-4 relative z-10">
 
-                        {!loading && sebuscaron == "eventos" &&
-                            <div className="mt-6 mb-4">
-                                    {eventosData.length === 0 ? (
-                                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-8 text-center">
-                                            <p className="text-gray-600 dark:text-gray-200">
-                                                No se encontraron eventos
-                                            </p>
-                                        </div>
-                                    ) : (
-                                        eventosData.map((evento) => (
-
-                                            <div className="h-40 bg-blue-500 mb-2 rounded-lg bg-gradient-to-b from-[#5d4dff] to-[#e2e2e2]
-  dark:from-[#5d4dff] dark:to-[#374151]">
-                                                <div className="h-16  flex items-center grid place-items-center">
-                                                    <img
-                                                        src="/svg/header/map.svg"
-                                                        alt="NQN Jóven"
-                                                        className="h-6 w-auto"
-                                                    />
-                                                </div>
-                                                <div class="mr-1 flex justify-end">
-                                                            <p className="text-white mb-1 text-xs xs:text-2xs font-bold"> 
-                                                                <DateDisplay  fechaEntrada={evento.fecha} />  - {evento.hora} hs - {evento.lugar}
-                                                            </p>
-                                                        </div>
-                                                <Link href={`/eventos/${evento.id}`} ><div className="ml-2 h-20">
-                                                    
-                                                    <h3 className="mb-2 text-xs xs:text-2xl font-bold text-black dark:text-white">
-                                                        <b>{(evento.titulo.length>56)? evento.titulo.substring(0, 56) + "..." : evento.titulo}</b>
-                                                    </h3>
-                                                    <p className="mb-1 text-xs xs:text-2xl font-bold text-gray dark:text-white">
-                                                        {(evento.descripcion.length>68)? evento.descripcion.substring(0, 68) + "..." : evento.contenido}
-                                                    </p>
-                                                    
-                                                    <div class="flex overflow-x-auto flex-nowrap gap-1">
-                                                        <div className="my-2 max-w-fit rounded-full" style={{
-                                                            background:
-                                                            "#c4ff00",  
-                                                            
-                                                        }}>
-                                                            <p className="ml-1 mr-1 text-xs xs:text-2xs font-bold text-black"> 
-                                                                {evento.categoria.nombre}
-                                                            </p>
-                                                        </div>
-
-                                                        <div className="my-2 max-w-fit rounded-full" style={{
-                                                            background:
-                                                            "#00d9fa",  
-                                                            
-                                                        }}>
-                                                            <p className="ml-1 mr-1 text-xs xs:text-2xs font-bold text-black"> 
-                                                                {evento.region.nombre}
-                                                            </p>
-                                                        </div>
-                                                        
-                                                    </div>    
-                                                </div></Link>
-                                            </div>
-                                        ))
-                                    )}
-                            </div>
-                        }
-
-
-                        {!loading && sebuscaron == "links" &&
-                            <div className="mt-6 mb-4">
-                                    {linksData.length === 0 ? (
-                                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-8 text-center">
-                                            <p className="text-gray-600 dark:text-gray-200">
-                                                No se encontraron links
-                                            </p>
-                                        </div>
-                                    ) : (
-                                        linksData.map((link) => (
-
-                                            <div className="h-40 bg-blue-500 mb-2 rounded-lg bg-gradient-to-b from-[#5d4dff] to-[#e2e2e2]
-  dark:from-[#5d4dff] dark:to-[#374151]" >
-                                                <div className="h-16  flex items-center grid place-items-center">
-                                                    <img
-                                                        src="/svg/header/map.svg"
-                                                        alt="NQN Jóven"
-                                                        className="h-6 w-auto"
-                                                    />
-                                                </div>
-                                                <div class="mr-1 flex justify-end">
-                                                            <p className="text-white text-xs xs:text-2xs font-bold"> 
-                                                                <DateDisplay  fechaEntrada={link.created_at} />
-                                                            </p>
-                                                        </div>
-                                                <Link href={`/links/${link.id}`} ><div className="ml-2 h-20">
-                                                    
-                                                    <h3 className="mb-2 text-xs xs:text-2xl font-bold text-black dark:text-white">
-                                                        <b>{(link.titulo.length>56)? link.titulo.substring(0, 56) + "..." : link.titulo}</b>
-                                                    </h3>
-                                                    <a href={link.url} className="mb-1 text-xs xs:text-2xl font-bold text-gray dark:text-white">
-                                                        {(link.url.length>68)? link.url.substring(0, 68) + "..." : link.url}
-                                                    </a>
-                                                    
-                                                    <div class="flex overflow-x-auto flex-nowrap gap-1">
-                                                        <div className="my-2 max-w-fit rounded-full" style={{
-                                                            background:
-                                                            "#c4ff00",  
-                                                            
-                                                        }}>
-                                                            <p className="ml-1 mr-1 text-xs xs:text-2xs font-bold text-black"> 
-                                                                {link.categoria.nombre}
-                                                            </p>
-                                                        </div>
-
-                                                        <div className="my-2 max-w-fit rounded-full" style={{
-                                                            background:
-                                                            "#00d9fa",  
-                                                            
-                                                        }}>
-                                                            <p className="ml-1 mr-1 text-xs xs:text-2xs font-bold text-black"> 
-                                                                {link.region.nombre}
-                                                            </p>
-                                                        </div>
-                                                        
-                                                    </div>    
-                                                </div></Link>
-                                            </div>
-                                        ))
-                                    )}
-                            </div>
-                        }
+                {/* Resultados */}
+                {loading ? (
+                    <div className="flex justify-center py-12"><LoadingSpinner /></div>
+                ) : (tipo === "todos" ? todosMezclados.length === 0 : (tipo === "noticias" ? noticiasData : tipo === "eventos" ? eventosData : linksData).length === 0) ? (
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-10 text-center">
+                        <img src="/images/iconos/huella naranja.png" alt="" aria-hidden="true" className="w-16 h-16 object-contain mx-auto mb-3 opacity-50" />
+                        <p className="text-gray-500 font-medium mb-1">No se encontraron resultados</p>
+                        <p className="text-gray-400 text-sm">Probá con otros filtros</p>
+                    </div>
+                ) : (
+                    <div className="flex flex-col gap-3">
+                        {tipo === "todos" && todosMezclados.map(item =>
+                            item._tipo === "noticia" ? <NoticiaCard key={`n-${item.id}`} item={item} /> :
+                            item._tipo === "evento"  ? <EventoCard  key={`e-${item.id}`} item={item} /> :
+                                                       <LinkCard    key={`l-${item.id}`} item={item} />
+                        )}
+                        {tipo === "noticias" && noticiasData.map(n => <NoticiaCard key={n.id} item={n} />)}
+                        {tipo === "eventos"  && eventosData.map(e  => <EventoCard  key={e.id} item={e} />)}
+                        {tipo === "links"    && linksData.map(l    => <LinkCard    key={l.id} item={l} />)}
+                    </div>
+                )}
+            </div>
         </AuthenticatedLayout>
+    );
+}
+
+/* --- Pills de filtro --- */
+function Pill({ label, active, onClick, color = "purple" }) {
+    var col = "";
+    if(color === "green"){
+        col = "bg-[#c4ff00] text-[#0a0236] font-bold";
+    }else{
+        if(color === "cyan"){
+            col = "bg-[#00d9fa] text-[#0a0236] font-bold";
+        }else{
+            col = "bg-[#5d4dff] text-white font-bold";
+        }
+    }
+    const activeClass = col;
+    return (
+        <button
+            onClick={onClick}
+            className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                active ? activeClass : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200"
+            }`}
+        >
+            {label}
+        </button>
+    );
+}
+
+/* --- Cards de resultados --- */
+function NoticiaCard({ item }) {
+    const imagen = item.imagen ? `/storage/${item.imagen}` : null;
+    return (
+        <Link href={`/noticias/${item.id}`}>
+            <div className="flex gap-3 bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+                <div className="flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden bg-gradient-to-br from-[#5d4dff] to-[#0a0236] flex items-center justify-center">
+                    {imagen
+                        ? <img src={imagen} alt={item.titulo} className="w-full h-full object-cover" />
+                        : <Newspaper className="w-6 h-6 text-white/40" strokeWidth={1.5} />
+                    }
+                </div>
+                <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm text-gray-800 dark:text-white line-clamp-2 leading-snug">{item.titulo}</p>
+                    <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{item.resumen || item.contenido}</p>
+                    <div className="flex gap-1.5 mt-1.5 flex-wrap">
+                        {item.categoria?.nombre && <Badge label={item.categoria.nombre} color="green" />}
+                        {item.region?.nombre    && <Badge label={item.region.nombre}    color="cyan"  />}
+                        <span className="text-xs text-gray-400 ml-auto">{formatFecha(item.created_at)}</span>
+                    </div>
+                </div>
+            </div>
+        </Link>
+    );
+}
+
+function EventoCard({ item }) {
+    const imagen = item.imagen ? `/storage/${item.imagen}` : null;
+    return (
+        <Link href={`/eventos/${item.id}`}>
+            <div className="flex gap-3 bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+                <div className="flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden bg-gradient-to-br from-emerald-600 to-emerald-800 flex items-center justify-center">
+                    {imagen
+                        ? <img src={imagen} alt={item.titulo} className="w-full h-full object-cover" />
+                        : <Calendar className="w-6 h-6 text-white/40" strokeWidth={1.5} />
+                    }
+                </div>
+                <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm text-gray-800 dark:text-white line-clamp-1 leading-snug">{item.titulo}</p>
+                    <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-400">
+                        {item.fecha && <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{formatFecha(item.fecha)}</span>}
+                        {item.hora  && <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{String(item.hora).substring(0,5)}hs</span>}
+                        {item.lugar && <span className="flex items-center gap-1 truncate"><MapPin className="w-3 h-3 flex-shrink-0" /><span className="truncate">{item.lugar}</span></span>}
+                    </div>
+                    <div className="flex gap-1.5 mt-1.5 flex-wrap">
+                        {item.categoria?.nombre && <Badge label={item.categoria.nombre} color="green" />}
+                        {item.region?.nombre    && <Badge label={item.region.nombre}    color="cyan"  />}
+                    </div>
+                </div>
+            </div>
+        </Link>
+    );
+}
+
+function LinkCard({ item }) {
+    return (
+        <a href={item.url} target="_blank" rel="noopener noreferrer">
+            <div className="flex gap-3 bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+                <div className="flex-shrink-0 w-16 h-16 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center">
+                    <ExternalLink className="w-6 h-6 text-white/40" strokeWidth={1.5} />
+                </div>
+                <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm text-gray-800 dark:text-white line-clamp-1">{item.titulo}</p>
+                    {item.descripcion && <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{item.descripcion}</p>}
+                    <p className="text-xs text-[#5d4dff] mt-0.5 truncate">{item.url}</p>
+                    <div className="flex gap-1.5 mt-1.5 flex-wrap">
+                        {item.categoria?.nombre && <Badge label={item.categoria.nombre} color="green" />}
+                        {item.region?.nombre    && <Badge label={item.region.nombre}    color="cyan"  />}
+                    </div>
+                </div>
+            </div>
+        </a>
+    );
+}
+
+function Badge({ label, color }) {
+    const cls = color === "green"
+        ? "bg-[#c4ff00] text-[#0a0236]"
+        : "bg-[#00d9fa] text-[#0a0236]";
+    return (
+        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${cls}`}>{label}</span>
     );
 }

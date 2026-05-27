@@ -120,16 +120,6 @@ export default function Sidebar({ isOpen, onClose, unreadCount }) {
 
                     
                     <BotonSidebar
-                        href="/favoritos"
-                        icon="/svg/sidebar/bookmark.svg"
-                        label="Elementos Guardados"
-                    />
-                    <BotonSidebar
-                        href="/ubicaciones"
-                        icon="/svg/sidebar/location.svg"
-                        label="Ubicaciones Guardadas"
-                    />
-                    <BotonSidebar
                         href="/notificaciones/explorar/noticias/todas/todas"
                         icon="/svg/eye-on.svg"
                         label="Explorar"
@@ -161,6 +151,16 @@ export default function Sidebar({ isOpen, onClose, unreadCount }) {
 
                     <DropdownContent />
                 </nav>
+
+                {/* Decoración araucaria al pie del sidebar */}
+                <div className="mt-auto pt-4 flex justify-end opacity-20 pointer-events-none select-none">
+                    <img
+                        src="/images/iconos/araucaria verde.png"
+                        alt=""
+                        aria-hidden="true"
+                        className="w-16 h-16 object-contain"
+                    />
+                </div>
             </aside>
 
             {/* sidebar móvil */}
@@ -183,12 +183,6 @@ export default function Sidebar({ isOpen, onClose, unreadCount }) {
                             <UserProfile />
                             <hr className="border-gray-200 dark:border-gray-600" />
 
-                            
-                            <BotonSidebar
-                                href="/favoritos"
-                                icon="/svg/sidebar/bookmark.svg"
-                                label="Elementos Guardados"
-                            />
                             
                             <BotonSidebar
                                 href="/notificaciones/explorar/noticias/todas/todas"

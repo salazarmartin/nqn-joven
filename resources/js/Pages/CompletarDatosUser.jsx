@@ -305,13 +305,14 @@ export default function CompletarDatosUser() {
 
     return (
         <AuthenticatedLayout >
-            <div className="mb-8 bg-white dark:bg-gray-800 text-black border border-gray-200 dark:border-edu-dark rounded-lg dark:text-gray-100 p-6 max-w-2xl mx-auto">
-                <h2 className="text-2xl font-bold mb-2 dark:text-gray-100">
+            <div className="max-w-2xl mx-auto pb-10 relative z-10">
+            <div className="mb-5 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">
                     {type === "institucion"
                         ? "Completá los datos de tu institución"
                         : "Completá tus datos personales"}
                 </h2>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
                     Este es el último paso para crear tu cuenta
                 </p>
 
@@ -376,6 +377,7 @@ export default function CompletarDatosUser() {
                                 (type === "institucion" && !direccionValida)
                             }
                             className="w-full"
+                            style={{ background: "#5d4dff" }}
                         >
                             {processing
                                 ? "Creando cuenta..."
@@ -383,6 +385,7 @@ export default function CompletarDatosUser() {
                         </PrimaryButton>
                     </div>
                 </form>
+            </div>
             </div>
         </AuthenticatedLayout>
     );

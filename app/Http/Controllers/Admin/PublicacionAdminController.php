@@ -66,16 +66,16 @@ class PublicacionAdminController extends Controller
             'imagen'       => 'nullable|image|max:3072',
         ]);
 
+        if ($request->hasFile('imagen')) {
+            $data['imagen'] = $request->file('imagen')->store('noticias', 'public');
+        } else {
+            unset($data['imagen']);
+        }
+
         $data['admin_id']           = $request->user()->id;
         $data['perf_institucion_id'] = null;
 
         $noticia = Noticia::create($data);
-
-        if ($request->hasFile('imagen')) {
-            $path = $request->file('imagen')->store('noticias', 'public');
-            $noticia->update(['imagen' => $path]);
-            
-        }
 
         return redirect()->route('admin.noticias.index')
             ->with('message', 'Novedad creada correctamente.');
@@ -93,27 +93,33 @@ class PublicacionAdminController extends Controller
     public function update(Request $request, Noticia $noticia)
     {
         $data = $request->validate([
-            'titulo'       => 'required|string|max:255',
-            'contenido'    => 'required|string',
-            'resumen'      => 'nullable|string|max:500',
-            'link_externo' => 'nullable|url|max:255',
-            'publicado'    => 'boolean',
-            'destacado'    => 'boolean',
-            'region_id'    => 'nullable|exists:regiones,id',
-            'categoria_id' => 'nullable|exists:categorias,id',
-            'imagen'       => 'nullable|image|max:3072',
+            'titulo'        => 'required|string|max:255',
+            'contenido'     => 'required|string',
+            'resumen'       => 'nullable|string|max:500',
+            'link_externo'  => 'nullable|url|max:255',
+            'publicado'     => 'boolean',
+            'destacado'     => 'boolean',
+            'region_id'     => 'nullable|exists:regiones,id',
+            'categoria_id'  => 'nullable|exists:categorias,id',
+            'imagen'        => 'nullable|image|max:3072',
+            'remove_imagen' => 'boolean',
         ]);
 
         if ($request->hasFile('imagen')) {
             if ($noticia->imagen) {
                 Storage::disk('public')->delete($noticia->imagen);
             }
-            $path = $request->file('imagen')->store('noticias', 'public');
-            $noticia->update(['imagen' => $path]);
-            
+            $data['imagen'] = $request->file('imagen')->store('noticias', 'public');
+        } elseif (!empty($data['remove_imagen'])) {
+            if ($noticia->imagen) {
+                Storage::disk('public')->delete($noticia->imagen);
+            }
+            $data['imagen'] = null;
+        } else {
+            unset($data['imagen']);
         }
 
-
+        unset($data['remove_imagen']);
         $noticia->update($data);
 
         return redirect()->route('admin.noticias.index')

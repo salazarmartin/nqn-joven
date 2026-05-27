@@ -45,7 +45,6 @@ export default function Header({ onToggleSidebar }) {
         const canal = window.Echo.private(`user.${user.id}`);
 
         canal.listen(".ComentarioCreado", (data) => {
-            console.log("📌 COMENTARIO RECIBIDO:", data);
             setNotificaciones((prev) => [
                 {
                     id: data.comentario.id,
@@ -218,8 +217,16 @@ export default function Header({ onToggleSidebar }) {
     NotificacionItem.displayName = 'NotificacionItem';
 
     return (
-        <header className=" text-white sticky top-0 z-50" style={{background:"#5d4dff"}}>
-            <nav className="mx-auto max-w-8xl px-4 sm:px-6 lg:px-8">
+        <header className="relative text-white sticky top-0 z-50 overflow-hidden" style={{background:"#5d4dff"}}>
+            {/* Decoraciones NQN */}
+            <img src="/images/iconos/Recurso amancay degrade 1.png" alt="" aria-hidden="true"
+                className="absolute -top-6 -right-4 w-20 h-20 object-contain opacity-20 pointer-events-none select-none" />
+            <img src="/images/iconos/Recurso araucaria degrade 2.png" alt="" aria-hidden="true"
+                className="absolute -top-4 left-1/2 w-16 h-16 object-contain opacity-10 pointer-events-none select-none -translate-x-1/2" />
+            <img src="/images/iconos/huella celeste.png" alt="" aria-hidden="true"
+                className="absolute -bottom-4 left-1/4 w-14 h-14 object-contain opacity-15 pointer-events-none select-none" />
+
+            <nav className="relative z-10 mx-auto max-w-8xl px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16 items-center justify-between">
                     <button
                         onClick={onToggleSidebar}

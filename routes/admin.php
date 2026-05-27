@@ -21,6 +21,7 @@ Route::prefix('admin')
         Route::get('/eventos/{evento}/editar', [EventoController::class, 'edit'])->name('eventos.edit');
         Route::put('/eventos/{evento}', [EventoController::class, 'update'])->name('eventos.update');
         Route::delete('/eventos/{evento}', [EventoController::class, 'destroy'])->name('eventos.destroy');
+        Route::get('/eventos/{evento}/inscriptos', [EventoController::class, 'inscriptos'])->name('eventos.inscriptos');
 
         // Links
         Route::get('/links', [LinkController::class, 'index'])->name('links.index');
@@ -32,10 +33,12 @@ Route::prefix('admin')
 
         // Usuarios
         Route::get('/usuarios', [UsuarioController::class, 'index'])->name('usuarios.index');
+        Route::get('/usuarios/crear-admin', [UsuarioController::class, 'createAdmin'])->name('usuarios.create-admin');
+        Route::post('/usuarios/crear-admin', [UsuarioController::class, 'storeAdmin'])->name('usuarios.store-admin');
         Route::get('/usuarios/{usuario}', [UsuarioController::class, 'show'])->name('usuarios.show');
         Route::patch('/usuarios/{usuario}/estado', [UsuarioController::class, 'updateEstado'])->name('usuarios.estado');
         Route::patch('/usuarios/{usuario}/verificar', [UsuarioController::class, 'verificarInstitucion'])->name('usuarios.verificar');
-        Route::delete('/usuarios/{usuario}', [UsuarioController::class, 'destroy'])->name('usuarios.destroy');
+Route::delete('/usuarios/{usuario}', [UsuarioController::class, 'destroy'])->name('usuarios.destroy');
 
         // Publicaciones / Novedades
         Route::get('/noticias', [PublicacionAdminController::class, 'index'])->name('noticias.index');

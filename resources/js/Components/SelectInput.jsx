@@ -5,7 +5,6 @@ export default forwardRef(function SelectInput(
   ref
 ) {
   const localRef = useRef(null);
-console.log(props);
   useImperativeHandle(ref, () => ({
     focus: () => localRef.current?.focus(),
   }));

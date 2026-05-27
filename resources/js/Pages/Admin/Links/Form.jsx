@@ -1,29 +1,48 @@
 import AdminLayout from "@/Layouts/AdminLayout";
 import { useForm, Link } from "@inertiajs/react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ImagePlus, X } from "lucide-react";
+import { useRef, useState } from "react";
 
 export default function LinkForm({ link, regiones, categorias }) {
     const isEditing = !!link;
+    const fileInputRef = useRef(null);
+    const [preview, setPreview] = useState(
+        link?.imagen ? `/storage/${link.imagen}` : null
+    );
 
-    const { data, setData, post, put, processing, errors } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
         titulo:       link?.titulo       ?? "",
         descripcion:  link?.descripcion  ?? "",
         url:          link?.url          ?? "",
         icono:        link?.icono        ?? "",
+        imagen:       null,
         activo:       link?.activo       ?? true,
         destacado:    link?.destacado    ?? false,
         orden:        link?.orden        ?? 0,
         region_id:    link?.region_id    ?? "",
         categoria_id: link?.categoria_id ?? "",
+        ...(isEditing ? { _method: "PUT" } : {}),
     });
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setData("imagen", file);
+        setPreview(URL.createObjectURL(file));
+    };
+
+    const removeImage = () => {
+        setData("imagen", null);
+        setPreview(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (isEditing) {
-            put(route("admin.links.update", link.id));
-        } else {
-            post(route("admin.links.store"));
-        }
+        const routeName = isEditing
+            ? route("admin.links.update", link.id)
+            : route("admin.links.store");
+        post(routeName, { forceFormData: true });
     };
 
     return (
@@ -80,6 +99,52 @@ export default function LinkForm({ link, regiones, categorias }) {
                                     className={input(errors.icono)}
                                     placeholder="Ej: 📚 o book"
                                 />
+                            </Field>
+
+                            <Field label="Imagen representativa" error={errors.imagen}>
+                                <div className="space-y-3">
+                                    {preview ? (
+                                        <div className="relative rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+                                            <img
+                                                src={preview}
+                                                alt="Preview"
+                                                className="w-full h-40 object-cover"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={removeImage}
+                                                className="absolute top-2 right-2 bg-white rounded-full p-1 shadow hover:bg-red-50 transition"
+                                            >
+                                                <X className="w-4 h-4 text-red-500" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="flex flex-col items-center justify-center h-32 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-[#23025d]/40 hover:bg-gray-50 transition"
+                                        >
+                                            <ImagePlus className="w-7 h-7 text-gray-400 mb-1" />
+                                            <span className="text-xs text-gray-500">Clic para subir imagen</span>
+                                            <span className="text-xs text-gray-400">JPG, PNG, WEBP — máx. 2MB</span>
+                                        </div>
+                                    )}
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageChange}
+                                        className="hidden"
+                                    />
+                                    {!preview && (
+                                        <button
+                                            type="button"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="text-xs text-[#23025d] hover:underline"
+                                        >
+                                            Seleccionar archivo
+                                        </button>
+                                    )}
+                                </div>
                             </Field>
                         </Card>
                     </div>

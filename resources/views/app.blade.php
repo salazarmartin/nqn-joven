@@ -12,7 +12,7 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
         
         <!-- favicon -->
-        <link rel="icon" type="image/svg+xml" href="/svg/faviconEduquen.svg">
+        <link rel="icon" type="image/svg+xml" href="/favicons/Imagen_logo.png">
 
         <!-- Scripts -->
         @routes

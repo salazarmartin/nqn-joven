@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 
 class UsuarioController extends Controller
@@ -55,7 +56,8 @@ class UsuarioController extends Controller
             'estado' => 'required|in:activo,inactivo,pendiente_verif,pendiente_datos,pendiente_aprobacion',
         ]);
 
-        $usuario->update(['estado' => $request->estado]);
+        $usuario->estado = $request->estado;
+        $usuario->save();
 
         return back()->with('message', 'Estado actualizado a "' . $request->estado . '".');
     }
@@ -67,9 +69,39 @@ class UsuarioController extends Controller
         }
 
         $usuario->institucion->update(['verificado' => true]);
-        $usuario->update(['estado' => 'activo']);
+        $usuario->estado = 'activo';
+        $usuario->save();
 
         return back()->with('message', 'Institución verificada y cuenta activada.');
+    }
+
+    public function createAdmin()
+    {
+        return Inertia::render('Admin/Usuarios/CreateAdmin');
+    }
+
+    public function storeAdmin(Request $request)
+    {
+        $request->validate([
+            'nombre'   => 'required|string|max:255',
+            'email'    => 'required|email|max:255|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $admin = new User([
+            'nombre'   => $request->nombre,
+            'email'    => $request->email,
+            'password' => Hash::make($request->password),
+            'telefono' => '',
+            'ciudad'   => '',
+            'provincia'=> '',
+        ]);
+        $admin->tipo_usuario = 'admin';
+        $admin->estado       = 'activo';
+        $admin->save();
+
+        return redirect()->route('admin.usuarios.index')
+            ->with('message', 'Administrador creado correctamente.');
     }
 
     public function destroy(User $usuario)

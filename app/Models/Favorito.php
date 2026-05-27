@@ -15,6 +15,7 @@ class Favorito extends Model
         'perf_persona_id',
         'perf_institucion_id',
         'noticia_id',
+        'evento_id',
     ];
 
     // Relaciones

@@ -13,7 +13,7 @@ return new class extends Migration
             
             $table->enum('trabaja_emprende', ['No', 'Trabaja', 'Emprende', 'Ambos'])->default('No');
             $table->string('qr_token');
-            $table->integer('dni')->nullable();
+            $table->integer('dni');
             
         });
     }

@@ -29,7 +29,7 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         $residencias = [];
-
+Log::info($user);
         // Si es institución, cargar sus residencias
         if ($user->tipo_usuario === 'institucion') {
             $institucion = PerfInstitucion::where('user_id', $user->id)->first();
@@ -60,8 +60,8 @@ class ProfileController extends Controller
             'auth' => [
                 'user' => $request->user(),
             ],
-            'region' => $persona->region,
-            'estudio' => $persona->estudio,
+            'region' => $persona?->region,
+            'estudio' => $persona?->estudio,
             'residencias' => $residencias,
             'regiones' => $regiones,
             'estudios' => $estudios,
@@ -87,6 +87,36 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit');
     }
 
+    public function editpersona(Request $request)
+    {
+        $user = Auth::user();
+        $persona = $user->persona;
+        $interests = $persona->interests;
+        $regiones = Region::orderBy('nombre','asc')->get();
+        $estudios = Estudio::orderBy('nombre','asc')->get();
+        
+        return Inertia::render('Profile/Partials/EditarPerfilPersona', [
+            'auth' => [
+                'user' => $request->user(),
+            ],
+            'currentInterests' => $interests,
+            'regiones' => $regiones,
+            'estudios' => $estudios,
+            'persona' => $persona,
+        ]);
+    }
+
+    public function cambiarcontrasena(Request $request)
+    {
+        $user = Auth::user();
+        
+        return Inertia::render('Profile/Partials/UpdatePasswordForm', [
+            'auth' => [
+                'user' => $request->user(),
+            ],
+            
+        ]);
+    }
 
     /**
      * Delete the user's account.
@@ -299,10 +329,10 @@ class ProfileController extends Controller
             'profile_photo_path.mimes' => 'Solo se permiten imágenes JPG, PNG o WEBP',
             'profile_photo_path.max' => 'La imagen no puede superar los 2MB',
             'razon_social.required' => 'La razón social es obligatoria',
-            'region_id.required' => 'La región es obligatoria',
             'email_contacto.required' => 'El email de contacto es obligatorio',
         ]);
 
+       // Log::info('Datos validados para completar perfil', ['data' => $validated]);
         // Validación adicional del documento si es institución
         if ($tipoUsuario === 'institucion') {
             if (!$this->validateDocumento($validated['tipo_documento'], $validated['doc_identificador'])) {
@@ -328,6 +358,7 @@ class ProfileController extends Controller
             'provincia' => $validated['provincia'],
         ];
 
+       // Log::info('Actualizando datos básicos del usuario', ['user_id' => $user->id, 'data' => $userData]);
         $user->update($userData);
 
         // guardar foto
@@ -355,7 +386,8 @@ class ProfileController extends Controller
                 ]
             );
 
-            $user->update(['estado' => 'activo']);
+            $user->estado = 'activo';
+            $user->save();
 
             return redirect()->route('inicio')
                 ->with('success', 'Perfil completado correctamente.');
@@ -397,7 +429,9 @@ class ProfileController extends Controller
                 ]
             );
 
-            $user->update(['estado' => 'pendiente_aprobacion']);
+           // Log::alert('Institución creada/actualizada, pendiente de aprobación', ['institucion_id' => $institucion->id, 'user_id' => $user->id]);
+            $user->estado = 'pendiente_aprobacion';
+            $user->save();
 
             $tokenFinal = $institucion->approval_token;
 
@@ -415,7 +449,7 @@ class ProfileController extends Controller
             } catch (\Exception $e) {
                 Log::error('Error enviando email al admin: ' . $e->getMessage());
             }
-
+ //Log::alert('Email de notificación enviado al admin para nueva institución', ['user_id' => $user->id, 'institucion_id' => $institucion->id]);
             return redirect()->route('institucion.pendiente')
                 ->with('info', 'Perfil completado. Tu institución será revisada por el administrador.');
         }

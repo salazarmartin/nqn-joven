@@ -14,12 +14,16 @@ class Evento extends Model
     protected $fillable = [
         'titulo', 'descripcion', 'imagen', 'lugar', 'fecha', 'hora',
         'publicado', 'destacado', 'link_externo', 'modalidad', 'region_id', 'categoria_id', 'admin_id',
+        'inscripcion_habilitada', 'cupos', 'fecha_inicio_inscripcion', 'fecha_fin_inscripcion',
     ];
 
     protected $casts = [
-        'fecha'      => 'date',
-        'publicado'  => 'boolean',
-        'destacado'  => 'boolean',
+        'fecha'                   => 'date',
+        'publicado'               => 'boolean',
+        'destacado'               => 'boolean',
+        'inscripcion_habilitada'  => 'boolean',
+        'fecha_inicio_inscripcion' => 'datetime',
+        'fecha_fin_inscripcion'   => 'datetime',
     ];
 
     public function region()
@@ -52,6 +56,11 @@ class Evento extends Model
     public function categoria()
     {
         return $this->belongsTo(Categoria::class);
+    }
+
+    public function inscripciones()
+    {
+        return $this->hasMany(EventoInscripcion::class);
     }
 
 }

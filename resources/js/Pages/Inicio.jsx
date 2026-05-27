@@ -1,12 +1,202 @@
 import { Head, Link, router } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import {Link as IconLink } from "lucide-react";
+import {Link as IconLink, ExternalLink, Calendar, MapPin, Newspaper } from "lucide-react";
 import {Copy } from "lucide-react";
 import PublicacionCard from "@/Components/Publicacion/PublicacionCard";
 import AccesosDirectos from "@/Components/AccesosDirectos";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import LoadingSpinner from "@/Components/LoadingSpinner";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+
+// Paleta NQN Joven — fondo + color de texto
+const CATEGORIA_PALETA = [
+    { bg: "#5d4dff", text: "#ffffff", dark: true },
+    { bg: "#c4ff00", text: "#0a0236", dark: false },
+    { bg: "#ff90eb", text: "#0a0236", dark: false },
+    { bg: "#00d9fa", text: "#0a0236", dark: false },
+    { bg: "#ff5b24", text: "#ffffff", dark: true },
+    { bg: "#0a0236", text: "#c4ff00", dark: true },
+];
+
+// Iconos por ID de categoría (manual de marca)
+const CATEGORIA_ICONOS = {
+    1: "/images/categoria/educacion.png",
+    2: "/images/categoria/trabajo.png",
+    3: "/images/categoria/cultura.png",
+    4: "/images/categoria/deportes.png",
+    5: "/images/categoria/participacion_ciudadana.png",
+    6: "/images/categoria/Salud-bienestar.png",
+    7: "/images/categoria/inclusion-financiera.png",
+    8: "/images/categoria/identidad-y-derechos.png",
+};
+
+function CategoriaCard({ categoria, index }) {
+    const { bg, text, dark } = CATEGORIA_PALETA[index % CATEGORIA_PALETA.length];
+    const icono = CATEGORIA_ICONOS[categoria.id];
+    // Fondo oscuro → ícono blanco; fondo claro → ícono negro
+    const iconStyle = dark
+        ? { filter: "brightness(0) invert(1)", opacity: 0.45 }
+        : { filter: "brightness(0)", opacity: 0.20 };
+    return (
+        <Link
+            href={`/notificaciones/explorar/noticias/${categoria.id}/todas`}
+            className="relative rounded-2xl overflow-hidden h-24 flex flex-col justify-end p-3 active:scale-95 transition-transform"
+            style={{ backgroundColor: bg }}
+        >
+            {/* Ícono de categoría como fondo */}
+            {icono ? (
+                <img
+                    src={icono}
+                    alt=""
+                    aria-hidden="true"
+                    className="absolute inset-0 w-full h-full object-contain scale-90 pointer-events-none select-none"
+                    style={iconStyle}
+                />
+            ) : (
+                <span
+                    className="absolute top-1 right-2 text-4xl font-black opacity-10 leading-none select-none"
+                    style={{ color: text }}
+                >
+                    {categoria.nombre.charAt(0).toUpperCase()}
+                </span>
+            )}
+
+            {/* Nombre de la categoría */}
+            <span className="relative z-10 font-bold text-sm leading-tight" style={{ color: text }}>
+                {categoria.nombre}
+            </span>
+        </Link>
+    );
+}
+
+const TIPO_CONFIG = {
+    noticia: { label: "Noticia",  bg: "bg-[#23025d]",   gradient: "from-[#23025d] to-[#5d4dff]", icon: Newspaper,    nqnIcon: "/images/iconos/muticia celeste.png" },
+    evento:  { label: "Evento",   bg: "bg-emerald-600", gradient: "from-emerald-800 to-emerald-500", icon: Calendar, nqnIcon: "/images/iconos/sol verde.png" },
+    link:    { label: "Link",     bg: "bg-blue-500",    gradient: "from-blue-800 to-blue-500",    icon: ExternalLink, nqnIcon: "/images/iconos/lanin celeste.png" },
+};
+
+function DestacadoCard({ item }) {
+    const config = TIPO_CONFIG[item.tipo] || TIPO_CONFIG.noticia;
+    const Icon = config.icon;
+    const href = item.tipo === "link"
+        ? item.url
+        : (item.tipo === "noticia" ? `/noticias/${item.id}` : `/eventos/${item.id}`);
+    const isExternal = item.tipo === "link";
+
+    const inner = (
+        <div className="relative flex-none w-52 h-44 rounded-2xl overflow-hidden shadow-md">
+            {/* Fondo: imagen o placeholder con diseño */}
+            {item.imagen ? (
+                <img
+                    src={item.imagen}
+                    alt={item.titulo}
+                    className="absolute inset-0 w-full h-full object-cover"
+                />
+            ) : (
+                <div className={`absolute inset-0 bg-gradient-to-br ${config.gradient}`}>
+                    {/* Ícono NQN como fondo relleno */}
+                    <img
+                        src={config.nqnIcon}
+                        alt="" aria-hidden="true"
+                        className="absolute inset-0 w-full h-full object-contain scale-125 opacity-20"
+                    />
+                    {/* Círculos decorativos */}
+                    <div className="absolute w-24 h-24 rounded-full bg-white/10 -top-4 -right-4" />
+                    <div className="absolute w-16 h-16 rounded-full bg-white/10 -bottom-3 -left-3" />
+                </div>
+            )}
+
+            {/* Overlay oscuro en la mitad inferior */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
+            {/* Badge tipo — arriba izquierda */}
+            <div className="absolute top-2.5 left-2.5">
+                <span className={`${config.bg} text-white text-xs font-semibold px-2 py-0.5 rounded-full flex items-center gap-1`}>
+                    <Icon className="w-3 h-3" />
+                    {config.label}
+                </span>
+            </div>
+
+            {/* Contenido — abajo */}
+            <div className="absolute bottom-0 left-0 right-0 p-3">
+                <p className="text-white font-bold text-sm leading-tight line-clamp-2">
+                    {item.titulo}
+                </p>
+                {item.descripcion && (
+                    <p className="text-white/70 text-xs mt-0.5 line-clamp-1">
+                        {item.descripcion}
+                    </p>
+                )}
+                <div className="flex gap-1 mt-1.5 flex-wrap">
+                    {item.categoria_id && (
+                        <span className="bg-[#c4ff00] text-black text-xs font-medium px-1.5 py-0.5 rounded-full">
+                            {item.categoria_id}
+                        </span>
+                    )}
+                    {item.region_id && (
+                        <span className="bg-[#00d9fa] text-black text-xs font-medium px-1.5 py-0.5 rounded-full">
+                            {item.region_id}
+                        </span>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+
+    if (isExternal) return <a href={href} target="_blank" rel="noopener noreferrer">{inner}</a>;
+    return <Link href={href}>{inner}</Link>;
+}
+
+function FeedItem({ item }) {
+    const config = TIPO_CONFIG[item.tipo] || TIPO_CONFIG.noticia;
+    const Icon = config.icon;
+    const isExternal = item.tipo === "link";
+    const href = item.tipo === "noticia" ? `/noticias/${item.id}`
+               : item.tipo === "evento"  ? `/eventos/${item.id}`
+               : item.url;
+
+    const content = (
+        <div className="flex gap-3 bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+            {/* Imagen o placeholder */}
+            <div className="flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden">
+                {item.imagen ? (
+                    <img src={item.imagen} alt={item.titulo} className="w-full h-full object-cover" />
+                ) : (
+                    <div className={`w-full h-full bg-gradient-to-br ${config.gradient} relative overflow-hidden`}>
+                        <img src={config.nqnIcon} alt="" aria-hidden="true"
+                            className="absolute inset-0 w-full h-full object-contain scale-110 opacity-30" />
+                    </div>
+                )}
+            </div>
+
+            {/* Contenido */}
+            <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                    <span className={`${config.bg} text-white text-xs font-medium px-2 py-0.5 rounded-full`}>
+                        {config.label}
+                    </span>
+                    {item.fecha_fmt && (
+                        <span className="text-xs text-gray-400">{item.fecha_fmt}</span>
+                    )}
+                </div>
+                <p className="font-semibold text-sm text-gray-800 dark:text-white line-clamp-1">{item.titulo}</p>
+                {item.descripcion && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5">{item.descripcion}</p>
+                )}
+                {item.extra && (
+                    <p className="text-xs text-gray-400 flex items-center gap-1 mt-1">
+                        <MapPin className="w-3 h-3" /> {item.extra}
+                    </p>
+                )}
+            </div>
+        </div>
+    );
+
+    if (isExternal) {
+        return <a href={href} target="_blank" rel="noopener noreferrer">{content}</a>;
+    }
+    return <Link href={href}>{content}</Link>;
+}
 
 export function CalculoEdad({ fechaNacimiento }) {
   const calcularEdad = (fecha) => {
@@ -36,19 +226,37 @@ export default function Inicio({
     userType,
     categorias,
     destacados,
+    feed = [],
     institucionesVisitadas = [],
 }) {
-    const noticiasData = noticias?.data || [];
     const noticiasLinks = noticias?.links || [];
-
-    const categoriasData = categorias || [];
     const destacadosData = destacados || [];
+    const feedData = feed || [];
 
     const nextPageUrl = noticiasLinks.find(
         (link) => link.label === "&raquo;"
     )?.url;
 
     const { loaderRef, isLoading } = useInfiniteScroll({ nextPageUrl });
+
+    const [categoriaActiva, setCategoriaActiva] = useState(null);
+
+    // Categorías únicas del feed para los pills
+    const categoriasDelFeed = useMemo(() => {
+        const map = new Map();
+        feedData.forEach(item => {
+            if (item.categoria_id && item.categoria_nombre) {
+                map.set(item.categoria_id, item.categoria_nombre);
+            }
+        });
+        return Array.from(map.entries()).map(([id, nombre]) => ({ id, nombre }));
+    }, [feedData]);
+
+    // Feed filtrado por categoría activa
+    const feedFiltrado = useMemo(() => {
+        if (!categoriaActiva) return feedData;
+        return feedData.filter(item => item.categoria_id === categoriaActiva);
+    }, [feedData, categoriaActiva]);
 
     
 
@@ -76,7 +284,7 @@ export default function Inicio({
         >
             <Head title="Inicio" />
 
-            <div className="pb-4 mb-8">
+            <div className="pb-4 mb-8 relative z-10">
                 {userType === "persona" && (
                     <div>
                         <div className="mb-2 grid grid-cols-2 gap-4 h-full flex items-center justify-end">
@@ -89,7 +297,7 @@ export default function Inicio({
                                 </p>
                             </div>
                             <div className="ml-auto mb-2 rounded-full  grid place-items-center" style={{
-                                border:"3px solid #c7c7c7",  background:"#35097c",  
+                                border:"3px solid #c7c7c7",  background:"#0a0236",  
                                 width:"110px",height:"110px",
                             }}>
                                 <img
@@ -102,171 +310,142 @@ export default function Inicio({
                         </div>
 
                         {/* Credencial */}
-                        <div className="grid grid-cols-2 gap-4 h-full flex items-center justify-end p-4 rounded-2xl group-hover:bg-yellow-200 dark:group-hover:bg-yellow-900/50 transition" style={{
-                            background:
-                                "linear-gradient(90deg, #5d4dff 0%,  #0a0236 100%, rgba(237, 221, 83, 1) 100%)",  
+                        <div className="relative grid grid-cols-2 gap-4 h-full flex items-center justify-end p-4 rounded-2xl overflow-hidden transition" style={{
+                            background: "linear-gradient(90deg, #5d4dff 0%, #0a0236 100%)",
                         }}>
-                            <div>
-                                <p className="text-sm xs:text-2xl text-gray-300">
-                                    MI CREDENCIAL
+                            {/* ── Fondo decorativo NQN ── */}
+                            <img src="/images/iconos/Recurso amancay degrade 1.png" alt="" aria-hidden="true"
+                                className="absolute -top-4 -right-4 w-28 h-28 object-contain opacity-[0.12] pointer-events-none select-none" />
+                            <img src="/images/iconos/Recurso araucaria degrade 2.png" alt="" aria-hidden="true"
+                                className="absolute -bottom-4 -left-4 w-24 h-24 object-contain opacity-[0.10] pointer-events-none select-none rotate-12" />
+                            <img src="/images/iconos/sol verde.png" alt="" aria-hidden="true"
+                                className="absolute top-2 left-1/2 w-10 h-10 object-contain opacity-[0.08] pointer-events-none select-none -translate-x-1/2" />
+                            <img src="/images/iconos/huella celeste.png" alt="" aria-hidden="true"
+                                className="absolute bottom-2 right-28 w-8 h-8 object-contain opacity-[0.08] pointer-events-none select-none" />
 
-                                </p>
+                            {/* Contenido — z-10 sobre las decoraciones */}
+                            <div className="relative z-10">
+                                <p className="text-sm text-gray-300">MI CREDENCIAL</p>
                                 <h3 className="text-xl sm:text-2xl font-bold text-white">
                                     {auth.user.nombre} {auth.user.persona.apellido}
                                 </h3>
-                                <p className="text-sm xs:text-2xl text-white">
+                                <p className="text-sm text-white">
                                     DNI {auth.user.persona.dni} - <CalculoEdad fechaNacimiento={auth.user.persona.fecha_nac} />
                                 </p>
-
-
-                                <div className="my-2 max-w-max rounded-full" style={{
-                                    background:
-                                    "#2BEAFF",  
-                                    width:
-                                    "80px"
-                                }}>
-                                    <p className="ml-1 mr-1 text-sm xs:text-2xs font-bold" style={{
-                                        color:
-                                        "#322B94",
-                                    }}> 
+                                <div className="my-2 max-w-max rounded-full px-2" style={{ background: "#2BEAFF" }}>
+                                    <p className="text-sm font-bold" style={{ color: "#322B94" }}>
                                         &#9679; {auth.user.estado}
                                     </p>
                                 </div>
                             </div>
-                            <div className="ml-auto rounded-xl grid place-items-center" style={{
-                                border:
-                                "1px solid gray",  
-                                background:
-                                "white",  
-                                width:
-                                "100px",
-                                height:
-                                "100px",
+
+                            {/* QR — z-10 */}
+                            <div className="relative z-10 ml-auto rounded-xl grid place-items-center" style={{
+                                border: "1px solid rgba(255,255,255,0.3)",
+                                background: "white",
+                                width: "120px",
+                                height: "120px",
                             }}>
                                 <img
                                     src="/svg/header/qr.png"
                                     alt="qr"
-                                    className="w-16 h-16 object-cover border-2 border-transparent hover:border-white transition-colors"
+                                    className="object-cover"
+                                    style={{
+                                        width: "114px",
+                                        height:"114px",
+                                    }}
                                 />
                             </div>
                         </div>
                         
                         <div className="mt-6">
-                            <h3 className="mb-2 text-xl sm:text-2xl font-bold text-black dark:text-white">
+                            <h3 className="mb-3 text-xl sm:text-2xl font-bold text-black dark:text-white">
                                 Destacados
                             </h3>
-                            <div class="flex overflow-x-auto flex-nowrap gap-4">
-
+                            <div className="flex overflow-x-auto flex-nowrap gap-3 pb-2 scrollbar-hide">
                                 {destacadosData.length === 0 ? (
-                                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-8 text-center">
-                                            <p className="text-gray-600 dark:text-gray-400">
-                                                No hay destacados cargados
-                                            </p>
-                                        </div>
-                                    ) : (
-
-                                        destacadosData.map((destacado, i) => (
-
-                                            <div key={i} className="flex-none w-64 h-40 bg-blue-500 mb-2 rounded-lg bg-[linear-gradient(to_bottom,#5d4dff_50%,#e2e2e2_50%)]
-                                            dark:bg-[linear-gradient(to_bottom,#5d4dff_50%,#374151_50%)]" >
-                                                <div className="h-20  flex items-center grid place-items-center bg-[radial-gradient(circle,#0a0236,#5d4dff)]">
-                                                    {destacado.imagen ? (
-                                                        <img
-                                                            src={destacado.imagen}
-                                                            alt={destacado.titulo}
-                                                            className="w-auto h-16 object-cover"
-                                                        />
-                                                    ) : (
-                                                        <IconLink
-                                                            size={24}
-                                                            color={"white"}
-                                                            
-                                                            
-                                                        />
-                                                    )}
-                                                </div>
-                                                <Link href={destacado.tipo=='noticia'? `/noticias/${destacado.id}` : `/eventos/${destacado.id}`} >
-                                                <div className="mt-1 ml-2 h-20">
-                                                    <h3 className="mb-2 text-xs xs:text-2xl  text-black dark:text-white">
-                                                        <b>{(destacado.titulo.length>34)? destacado.titulo.substring(0, 34) + "..." : destacado.titulo}</b>
-                                                    </h3>
-                                                    <p className="mb-1 text-xs xs:text-2xl  text-gray dark:text-white">
-                                                        {(destacado.descripcion.length>37)? destacado.descripcion.substring(0, 37) + "..." : destacado.descripcion}
-                                                    </p>
-                                                    
-                                                    <div class="flex overflow-x-auto flex-nowrap gap-1">
-                                                        
-                                                        {destacado.categoria_id!=null && ( 
-                                                        <div className="my-2 max-w-fit rounded-full" style={{
-                                                            background:
-                                                            "#c4ff00",  
-                                                            
-                                                        }}>
-                                                            <p className="ml-1 mr-1 text-xs xs:text-2xs font-bold text-black"> 
-                                                                {destacado.categoria_id} 
-                                                            </p>
-                                                        </div>
-                                                        )}
-                                                        
-                                                        {destacado.region_id!=null && ( 
-                                                        <div className="my-2 max-w-fit rounded-full" style={{
-                                                            background:
-                                                            "#00d9fa",  
-                                                            
-                                                        }}>
-                                                            <p className="ml-1 mr-1 text-xs xs:text-2xs font-bold text-black"> 
-                                                                {destacado.region_id}
-                                                            </p>
-                                                        </div>
-                                                        )}
-                                                    </div>  
-                                                </div> 
-
-                                                </Link>
-                                            </div>
-                                        ))
-                                    )}
-                                
+                                    <div className="bg-white dark:bg-gray-800 rounded-xl p-8 text-center w-full">
+                                        <p className="text-gray-500 text-sm">No hay destacados cargados</p>
+                                    </div>
+                                ) : (
+                                    destacadosData.map((d, i) => (
+                                        <DestacadoCard key={i} item={d} />
+                                    ))
+                                )}
                             </div>
                         </div>
 
 
-                        <div className="mt-6 mb-8">
-                            <h3 className="mb-2 text-xl sm:text-2xl font-bold text-black dark:text-white">
+                        {/* Explorá por categoría */}
+                        <div className="mt-6">
+                            <h3 className="mb-3 text-xl sm:text-2xl font-bold text-black dark:text-white">
                                 Explorá por categoría
                             </h3>
-
-                            <div className="grid grid-cols-2 gap-3 flex items-center">
-
-                                
-                                    {categoriasData.length === 0 ? (
-                                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-8 text-center">
-                                            <p className="text-gray-600 dark:text-gray-400">
-                                                No hay categorías cargadas
-                                            </p>
-                                        </div>
-                                    ) : (
-                                        categoriasData.map((categoria) => (
-                                            <Link
-                                                href={`/notificaciones/explorar/noticias/${categoria.id}/todas`}
-                                                className="bg-[#e2e2e2] rounded-lg dark:bg-gray-700 dark:text-white grid place-items-center h-20">
-                                            
-                                                <Copy
-                                                    size={24}
-                                                    color={"white"}        
-                                                />
-                                                <p>
-                                                    <b>{categoria.nombre}</b>
-                                                </p>
-                                            
-                                            
-                                            </Link>       
-                                        ))
-                                    )}
-                                
-                                
+                            <div className="grid grid-cols-2 gap-3">
+                                {categorias?.length === 0 ? (
+                                    <div className="col-span-2 bg-white dark:bg-gray-800 rounded-lg p-8 text-center">
+                                        <p className="text-gray-600 dark:text-gray-400">No hay categorías cargadas</p>
+                                    </div>
+                                ) : (
+                                    categorias?.map((categoria, i) => (
+                                        <CategoriaCard key={categoria.id} categoria={categoria} index={i} />
+                                    ))
+                                )}
                             </div>
                         </div>
+
+                        {/* Feed unificado */}
+                        {feedData.length > 0 && (
+                            <div className="mt-6 mb-8">
+                                <h3 className="mb-3 text-xl font-bold text-black dark:text-white">
+                                    Novedades
+                                </h3>
+
+                                {/* Pills de categorías */}
+                                {categoriasDelFeed.length > 0 && (
+                                    <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide">
+                                        <button
+                                            onClick={() => setCategoriaActiva(null)}
+                                            className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                                                !categoriaActiva
+                                                    ? "bg-[#5d4dff] text-white"
+                                                    : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                                            }`}
+                                        >
+                                            Todos
+                                        </button>
+                                        {categoriasDelFeed.map(cat => (
+                                            <button
+                                                key={cat.id}
+                                                onClick={() => setCategoriaActiva(
+                                                    categoriaActiva === cat.id ? null : cat.id
+                                                )}
+                                                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                                                    categoriaActiva === cat.id
+                                                        ? "bg-[#23025d] text-white"
+                                                        : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                                                }`}
+                                            >
+                                                {cat.nombre}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Lista del feed */}
+                                <div className="flex flex-col gap-3">
+                                    {feedFiltrado.length === 0 ? (
+                                        <p className="text-center text-sm text-gray-400 py-8">
+                                            No hay contenido en esta categoría.
+                                        </p>
+                                    ) : (
+                                        feedFiltrado.map(item => (
+                                            <FeedItem key={`${item.tipo}-${item.id}`} item={item} />
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 

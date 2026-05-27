@@ -10,21 +10,13 @@ export default function InstitucionPendiente({ auth }) {
                 <div className="max-w-3xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-8 text-center">
-                            {/* Icono de reloj/espera */}
-                            <div className="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-yellow-100 mb-6">
-                                <svg
-                                    className="h-12 w-12 text-yellow-600"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                                    />
-                                </svg>
+                            {/* Icono amancay NQN */}
+                            <div className="mx-auto flex items-center justify-center h-28 w-28 mb-6">
+                                <img
+                                    src="/images/iconos/amancay celeste.png"
+                                    alt="Verificación pendiente"
+                                    className="h-full w-full object-contain"
+                                />
                             </div>
 
                             <h2 className="text-2xl font-bold text-gray-900 mb-4">
@@ -100,7 +92,7 @@ export default function InstitucionPendiente({ auth }) {
                                     className="text-blue-600 hover:text-blue-800"
                                 >
                                     {import.meta.env.VITE_ADMIN_EMAIL ||
-                                        "ingresar.correo@eduquen.com"}
+                                        "contacto@nqnjoven.gob.ar"}
                                 </a>
                             </p>
                         </div>

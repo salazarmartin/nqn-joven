@@ -43,60 +43,51 @@ class NotificacionController extends Controller
     }
 
     
-    public function explorar($buscar,$cat,$reg)
+    public function explorar($buscar, $cat, $reg)
     {
-        $user = Auth::id();
+        $catNombre = ($cat !== "todas") ? (Categoria::find($cat)?->nombre ?? '') : null;
 
-        if($buscar=="noticias"){
-            if($cat!="todas"){
-                if($reg!="todas"){
-                    $noticias = Noticia::join('noticiacategorias','noticias.id','=','noticiacategorias.noticia_id')
-                    ->where('noticiacategorias.categoria_id','=',$cat)
-                    ->where('region_id','=',$reg)
-                    ->with('categoria')
-                    ->with('region')
-                    ->select('noticias.*')
-                    ->orderBy('noticias.created_at','asc')
-                    ->get();
-                }else{
-                    $noticias = Noticia::join('noticiacategorias','noticias.id','=','noticiacategorias.noticia_id')
-                    ->where('noticiacategorias.categoria_id','=',$cat)    
-                    ->with('region')
-                    ->with('categoria')
-                    ->select('noticias.*')
-                    ->orderBy('noticias.created_at','asc')
-                    ->get();
-                }
-            }else{
-                if($reg!="todas"){
-                    $noticias = Noticia::where('region_id','=',$reg)
-                    ->with('region')
-                    ->with('categoria')
-                    ->orderBy('noticias.created_at','asc')
-                    ->get();
-                }else{
-                    
-                    $noticias = Noticia::with('region')
-                    ->with('categoria')
-                    ->orderBy('noticias.created_at','asc')
-                    ->get();
-                }
-            }
+        // Noticias — guardan categorías como JSON
+        $queryNoticias = Noticia::with('region', 'categoria')->where('publicado', 1);
+        if ($catNombre) {
+            $queryNoticias->where('categorias', 'LIKE', '%"' . $catNombre . '"%');
         }
-        
-        $categorias = Categoria::orderBy('nombre','asc')->get();
-        $regiones = Region::orderBy('nombre','asc')->get();
+        if ($reg !== "todas") {
+            $queryNoticias->where('region_id', $reg);
+        }
+        $noticias = $queryNoticias->orderBy('created_at', 'asc')->get();
+
+        // Eventos — usan categoria_id
+        $queryEventos = Evento::with('region', 'categoria')->where('publicado', 1);
+        if ($cat !== "todas") {
+            $queryEventos->where('categoria_id', $cat);
+        }
+        if ($reg !== "todas") {
+            $queryEventos->where('region_id', $reg);
+        }
+        $eventos = $queryEventos->orderBy('created_at', 'asc')->get();
+
+        // Links — usan categoria_id
+        $queryLinks = Link::with('region', 'categoria')->where('activo', 1);
+        if ($cat !== "todas") {
+            $queryLinks->where('categoria_id', $cat);
+        }
+        if ($reg !== "todas") {
+            $queryLinks->where('region_id', $reg);
+        }
+        $links = $queryLinks->orderBy('orden', 'asc')->get();
+
+        $categorias = Categoria::orderBy('nombre', 'asc')->get();
+        $regiones   = Region::orderBy('nombre', 'asc')->get();
 
         return Inertia::render('Notificaciones/explorar', [
-            'noticias' => $noticias,
-            'categorias' => $categorias,
-            'regiones' => $regiones,
-            'categoriaelegida' => ($cat=="todas")? 0 : $cat,
-            'auth' => [
-                'user' => $user,
-            ],
+            'noticias'         => $noticias,
+            'eventos'          => $eventos,
+            'links'            => $links,
+            'categorias'       => $categorias,
+            'regiones'         => $regiones,
+            'categoriaelegida' => ($cat === "todas") ? 0 : $cat,
         ]);
-        
     }
 
     public function buscarnoticias($buscar,$cat,$reg)
@@ -107,22 +98,20 @@ class NotificacionController extends Controller
 
         if($buscar=="noticias"){
             if($cat!="todas"){
+                // Las noticias guardan categorías como JSON — buscamos por nombre de categoría
+                $catNombre = Categoria::find($cat)?->nombre ?? '';
                 if($reg!="todas"){
-                    $noticias = Noticia::join('noticiacategorias','noticias.id','=','noticiacategorias.noticia_id')
-                    ->where('noticiacategorias.categoria_id','=',$cat)
+                    $noticias = Noticia::where('categorias', 'LIKE', '%"' . $catNombre . '"%')
                     ->where('region_id','=',$reg)
                     ->with('region')
                     ->with('categoria')
-                    ->select('noticias.*')
-                    ->orderBy('noticias.created_at','asc')
+                    ->orderBy('created_at','asc')
                     ->get();
                 }else{
-                    $noticias = Noticia::join('noticiacategorias','noticias.id','=','noticiacategorias.noticia_id')
-                    ->where('noticiacategorias.categoria_id','=',$cat)    
+                    $noticias = Noticia::where('categorias', 'LIKE', '%"' . $catNombre . '"%')
                     ->with('region')
                     ->with('categoria')
-                    ->select('noticias.*')
-                    ->orderBy('noticias.created_at','asc')
+                    ->orderBy('created_at','asc')
                     ->get();
                 }
             }else{
@@ -130,13 +119,12 @@ class NotificacionController extends Controller
                     $noticias = Noticia::where('region_id','=',$reg)
                     ->with('region')
                     ->with('categoria')
-                    ->orderBy('noticias.created_at','asc')
+                    ->orderBy('created_at','asc')
                     ->get();
                 }else{
-                    
                     $noticias = Noticia::with('region')
                     ->with('categoria')
-                    ->orderBy('noticias.created_at','asc')
+                    ->orderBy('created_at','asc')
                     ->get();
                 }
             }

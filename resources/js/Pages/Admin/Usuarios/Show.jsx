@@ -1,6 +1,6 @@
 import AdminLayout from "@/Layouts/AdminLayout";
 import { Link, router, useForm } from "@inertiajs/react";
-import { ArrowLeft, BadgeCheck, Ban, Trash2, ShieldCheck, Mail, Phone, MapPin, Calendar, Globe, Building2 } from "lucide-react";
+import { ArrowLeft, BadgeCheck, Trash2, ShieldCheck, Mail, Phone, MapPin, Calendar, Globe, Building2 } from "lucide-react";
 
 const ESTADO_OPTIONS = [
     { value: "activo",               label: "Activo" },

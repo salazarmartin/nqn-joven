@@ -1,3 +1,6 @@
+import { Head, Link } from "@inertiajs/react";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+
 import InputError from "@/Components/InputError";
 import InputLabel from "@/Components/InputLabel";
 import SelectInput from "@/Components/SelectInput";
@@ -8,9 +11,13 @@ import { useForm, usePage } from "@inertiajs/react";
 import { Transition } from "@headlessui/react";
 import { toast } from "react-hot-toast";
 
+import ActualizarIntereses from "./ActualizarIntereses";
+
 export default function EditarPerfilPersona({ className = "", onCancel }) {
     const { props } = usePage();
+    const auth = props.auth;
     const user = props.auth.user;
+    
     const regiones = props.regiones;
     const estudios = props.estudios;
     const persona = props.persona || {};
@@ -52,23 +59,37 @@ export default function EditarPerfilPersona({ className = "", onCancel }) {
 
     const handleCancel = () => {
         setData({
-            nombre: user.nombre || "",
-            apellido: persona.apellido || "",
-            biografia: persona.biografia || "",
+            nombre:           user.nombre || "",
+            apellido:         persona.apellido || "",
+            ciudad:           user.ciudad || "",
+            provincia:        user.provincia || "",
+            telefono:         user.telefono || "",
+            trabaja_emprende: persona.trabaja_emprende || "",
+            estudio_id:       persona.estudio_id || "",
+            region_id:        persona.region_id || "",
+            biografia:        persona.biografia || "",
         });
         if (onCancel) onCancel();
     };
 
     return (
-        <section className={`${className} w-full`}>
-            <header>
-                <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                    Información personal
-                </h2>
-                
-            </header>
+        <AuthenticatedLayout user={auth.user}>
+            <Head title="Editar mis Datos" />
 
-            <form onSubmit={submit} className="mt-6 space-y-6">
+            <div className="max-w-2xl mx-auto px-4 pb-10 relative z-10">
+                <div className="mb-4">
+                    <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                        Editar mis Datos
+                    </h1>
+                </div>
+
+        <section className={`${className} w-full`}>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h2 className="text-base font-semibold text-gray-700 dark:text-gray-100 border-b border-gray-100 dark:border-gray-700 pb-3 mb-5">
+                Información personal
+            </h2>
+
+            <form onSubmit={submit} className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <InputLabel htmlFor="nombre" value="Nombre *" />
@@ -144,7 +165,6 @@ export default function EditarPerfilPersona({ className = "", onCancel }) {
                             options={regiones}
                             value={data.region_id}
                             onChange={(e) => setData("region_id", e.target.value)}
-                            onBlur={(e) => onFieldValidation("region_id", e.target.value)}
                         />
                         <InputError message={errors.region_id} className="mt-2" />
                     </div>
@@ -171,13 +191,7 @@ export default function EditarPerfilPersona({ className = "", onCancel }) {
                         <InputLabel htmlFor="trabaja_emprende" value="Trabaja/Emprende *" />
                         <select
                             value={data.trabaja_emprende}
-                            onChange={(e) => {
-                                handleDataChange("trabaja_emprende", e.target.value);
-                                
-                            }}
-                            onBlur={(e) =>
-                                onFieldValidation("trabaja_emprende", e.target.value)
-                            }
+                            onChange={(e) => handleDataChange("trabaja_emprende", e.target.value)}
                             className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 px-3 py-2 rounded-lg focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400"
                         >
                             <option value="" disabled>Seleccione...</option>
@@ -192,11 +206,10 @@ export default function EditarPerfilPersona({ className = "", onCancel }) {
                     <div>
                         <InputLabel htmlFor="estudio_id" value="Estudios *" />
                         <SelectInput
-                                            options={estudios}
-                                            value={data.estudio_id}
-                                            onChange={(e) => setData("estudio_id", e.target.value)}
-                                            onBlur={(e) => onFieldValidation("estudio_id", e.target.value)}
-                                        />
+                            options={estudios}
+                            value={data.estudio_id}
+                            onChange={(e) => setData("estudio_id", e.target.value)}
+                        />
                         <InputError message={errors.estudio_id} className="mt-2" />
                     </div>
                 </div>
@@ -248,8 +261,17 @@ export default function EditarPerfilPersona({ className = "", onCancel }) {
                             </p>
                         </Transition>
                     </div>
+
                 </div>
             </form>
+            <ActualizarIntereses
+                currentInterests={props.currentInterests || []}
+                className="mx-auto w-full sm:max-w-2xl"
+                onCancel={() => setSeccionAbierta(null)}
+            />
+            </div>
         </section>
+    </div>
+</AuthenticatedLayout>
     );
 }

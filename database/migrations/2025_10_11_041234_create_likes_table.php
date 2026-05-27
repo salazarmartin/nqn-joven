@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('perf_persona_id')->nullable()->constrained('perf_persona')->onDelete('cascade');
             $table->foreignId('perf_institucion_id')->nullable()->constrained('perf_institucion')->onDelete('cascade');
             $table->unsignedBigInteger('target_id'); // id del elemento al que da like
-            $table->enum('target_tipo', ['noticia', 'comentario','evento']);
+            $table->enum('target_tipo', ['noticia', 'comentario','evento','link']);
             $table->timestamps();
         });
     }

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Favorito;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class FavoritoController extends Controller
 {
@@ -17,19 +18,29 @@ class FavoritoController extends Controller
     public function toggle(Request $request)
     {
         $validated = $request->validate([
-            'noticia_id' => 'required|exists:noticias,id',
+            'noticia_id' => 'required',
+            'tipo' => 'required'
         ]);
 
-        $noticiaId = $validated['noticia_id'];
+        $id = $validated['noticia_id'];
         $user = Auth::user();
 
         $campo = $user->tipo_usuario === 'persona' ? 'perf_persona_id' : 'perf_institucion_id';
         $perfilId = $user->tipo_usuario === 'persona' ? $user->persona->id : $user->institucion->id;
 
-        $favorito = Favorito::where([
-            $campo => $perfilId,
-            'noticia_id' => $noticiaId,
-        ])->first();
+        if($request->tipo == "noticia"){
+            $favorito = Favorito::where([
+                $campo => $perfilId,
+                'noticia_id' => $id,
+            ])->first();
+        }else{
+            if($request->tipo == "evento"){
+                $favorito = Favorito::where([
+                    $campo => $perfilId,
+                    'evento_id' => $id,
+                ])->first();
+            }
+        }
 
         if ($favorito) {
             $favorito->delete();
@@ -37,34 +48,43 @@ class FavoritoController extends Controller
             ActividadController::registrar(
                 $user->id,
                 'dejar_favorito',
-                'noticia',
-                $noticiaId,
+                $request->tipo,
+                $id,
                 'Quitaste de favoritos'
             );
 
             return response()->json([
                 'success' => true,
                 'action' => 'removed',
-                'message' => 'Noticia eliminada de favoritos',
+                'message' => $request->tipo.' eliminada/o de favoritos',
             ]);
         } else {
-            Favorito::create([
-                $campo => $perfilId,
-                'noticia_id' => $noticiaId,
-            ]);
-
+            
+            if($request->tipo == "noticia"){
+                Favorito::create([
+                    $campo => $perfilId,
+                    'noticia_id' => $id,
+                ]);
+            }else{
+                if($request->tipo == "evento"){
+                    Favorito::create([
+                        $campo => $perfilId,
+                        'evento_id' => $id,
+                    ]);
+                }
+            }
             ActividadController::registrar(
                 $user->id,
                 'favorito',
-                'noticia',
-                $noticiaId,
+                $request->tipo,
+                $id,
                 'Guardaste en favoritos'
             );
 
             return response()->json([
                 'success' => true,
                 'action' => 'added',
-                'message' => 'Noticia agregada a favoritos',
+                'message' => $request->tipo.' agregada/o a favoritos',
             ]);
         }
     }

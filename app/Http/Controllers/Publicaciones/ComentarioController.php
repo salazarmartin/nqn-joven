@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Publicaciones;
 use App\Http\Controllers\ActividadController;
 use App\Http\Controllers\Controller;
 use App\Models\ComentNoticia;
+use App\Models\ComentEvento;
+use App\Models\User;
 use App\Services\OpenAIModerationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -29,11 +31,11 @@ class ComentarioController extends Controller
      * Bloquea comentarios con palabras prohibidas
      */
     public function store(Request $request)
-    {
+    {Log::info($request);
         $validated = $request->validate([
-            'noticia_id' => 'required|exists:noticias,id',
+            'noticia_id' => 'required',
             'contenido' => 'required|string|max:1000',
-            'coment_padre_id' => 'nullable|exists:coment_noticias,id',
+            'coment_padre_id' => 'nullable',
         ]);
 
         $user = Auth::user();
@@ -52,19 +54,40 @@ class ComentarioController extends Controller
             ], 422);
         }
 
-        $comentarioData = [
-            'noticia_id' => $validated['noticia_id'],
-            'contenido' => $validated['contenido'], // guardar texto original
-            'coment_padre_id' => $validated['coment_padre_id'] ?? null,
-        ];
+        if($request->tipo == "noticia"){
+            $comentarioData = [
+                'noticia_id' => $validated['noticia_id'],
+                'contenido' => $validated['contenido'], // guardar texto original
+                'coment_padre_id' => $validated['coment_padre_id'] ?? null,
+            ];
+            
+            if ($user->tipo_usuario === 'persona') {
+                $comentarioData['perf_persona_id'] = $user->persona->id;
+            } else {
+                $comentarioData['perf_institucion_id'] = $user->institucion->id;
+            }
 
-        if ($user->tipo_usuario === 'persona') {
-            $comentarioData['perf_persona_id'] = $user->persona->id;
-        } else {
-            $comentarioData['perf_institucion_id'] = $user->institucion->id;
+            $comentario = ComentNoticia::create($comentarioData);
+
+        }else{
+            if($request->tipo == "evento"){
+                $comentarioData = [
+                    'evento_id' => $validated['noticia_id'],
+                    'contenido' => $validated['contenido'], // guardar texto original
+                    'coment_padre_id' => $validated['coment_padre_id'] ?? null,
+                ];
+
+                if ($user->tipo_usuario === 'persona') {
+                    $comentarioData['perf_persona_id'] = $user->persona->id;
+                } else {
+                    $comentarioData['perf_institucion_id'] = $user->institucion->id;
+                }
+
+                $comentario = ComentEvento::create($comentarioData);
+
+            }
         }
 
-        $comentario = ComentNoticia::create($comentarioData);
 
         Log::info('Comentario creado:', [
             'id' => $comentario->id,
@@ -76,48 +99,107 @@ class ComentarioController extends Controller
         if (!$comentario->coment_padre_id) {
         Log::info('Disparando evento ComentarioCreado para comentario normal', ['id' => $comentario->id]);
         
-        // 👇 VERIFICAR ANTES DE DISPARAR EL EVENTO
-        $noticia = $comentario->noticia;
-        $duenoNoticia = $noticia->institucion->user;
         
-        if ($user->id !== $duenoNoticia->id) {
-            event(new ComentarioCreado($comentario));
+        if($request->tipo == "noticia"){
+            $noticia = $comentario->noticia;
+            
+            if($noticia->admin_id){
+                $duenoNoticia = User::where('id','=',$noticia->admin_id)->get();
+                if(count($duenoNoticia)>0)
+                    $dueno = $duenoNoticia[0];
+            }
+            
+            if ($user->id !== $dueno->id) {
+                event(new ComentarioCreado($comentario));
+            }
+        }else{
+            if($request->tipo == "evento"){
+                $evento = $comentario->evento;
+                
+                if($evento->admin_id){
+                    $duenoevento = User::where('id','=',$evento->admin_id)->get();
+                    if(count($duenoevento)>0)
+                        $dueno = $duenoevento[0];
+                }
+                
+                if ($user->id !== $dueno->id) {
+                    event(new ComentarioCreado($comentario));
+                }
+            }
         }
     } else {
-        $comentarioPadre = ComentNoticia::find($comentario->coment_padre_id);
-        
-        // 👇 VERIFICAR ANTES DE DISPARAR EL EVENTO
-        $receptorPadre = $comentarioPadre->persona?->user ?? $comentarioPadre->institucion?->user;
-        
-        if ($receptorPadre && $receptorPadre->id !== $user->id) {
-            Log::info('Disparando evento RespuestaComentarioEvent para comentario hijo', [
-                'comentario_id' => $comentario->id,
-                'coment_padre_id' => $comentario->coment_padre_id,
-            ]);
+        if($request->tipo == "noticia"){
+            $comentarioPadre = ComentNoticia::find($comentario->coment_padre_id);
             
-            event(new RespuestaComentarioEvent($comentario));
-            $receptorPadre->notify(new RespuestaComentarioNotification($comentario));
+            // 👇 VERIFICAR ANTES DE DISPARAR EL EVENTO
+            $receptorPadre = $comentarioPadre->persona?->user ?? $comentarioPadre->institucion?->user;
+            
+            if ($receptorPadre && $receptorPadre->id !== $user->id) {
+                Log::info('Disparando evento RespuestaComentarioEvent para comentario hijo', [
+                    'comentario_id' => $comentario->id,
+                    'coment_padre_id' => $comentario->coment_padre_id,
+                ]);
+                
+                event(new RespuestaComentarioEvent($comentario));
+                $receptorPadre->notify(new RespuestaComentarioNotification($comentario));
+            }
+        }else{
+            if($request->tipo == "evento"){
+                $comentarioPadre = ComentEvento::find($comentario->coment_padre_id);
+                
+                // 👇 VERIFICAR ANTES DE DISPARAR EL EVENTO
+                $receptorPadre = $comentarioPadre->persona?->user ?? $comentarioPadre->institucion?->user;
+                
+                if ($receptorPadre && $receptorPadre->id !== $user->id) {
+                    Log::info('Disparando evento RespuestaComentarioEvent para comentario hijo', [
+                        'comentario_id' => $comentario->id,
+                        'coment_padre_id' => $comentario->coment_padre_id,
+                    ]);
+                    
+                    event(new RespuestaComentarioEvent($comentario));
+                    $receptorPadre->notify(new RespuestaComentarioNotification($comentario));
+                }
+            }
         }
     }
         
+        if($request->tipo == "noticia"){
+            $comentario = ComentNoticia::with([
+                'persona.user',
+                'institucion.user',
+                'likes'
+            ])->find($comentario->id);
 
-        $comentario = ComentNoticia::with([
-            'persona.user',
-            'institucion.user',
-            'likes'
-        ])->find($comentario->id);
+            Log::info('Comentario final con relaciones cargadas:', ['comentario' => $comentario]);
 
-        Log::info('Comentario final con relaciones cargadas:', ['comentario' => $comentario]);
+            ActividadController::registrar(
+                $user->id,
+                'comentario',
+                'noticia',
+                $validated['noticia_id'],
+                'Comentaste una noticia',
+                ['comentario' => $validated['contenido']]
+            );
+        }else{
+            if($request->tipo == "evento"){
+                $comentario = ComentEvento::with([
+                    'persona.user',
+                    'institucion.user',
+                    'likes'
+                ])->find($comentario->id);
 
-        ActividadController::registrar(
-            $user->id,
-            'comentario',
-            'noticia',
-            $validated['noticia_id'],
-            'Comentaste una noticia',
-            ['comentario' => $validated['contenido']]
-        );
-        
+                Log::info('Comentario final con relaciones cargadas:', ['comentario' => $comentario]);
+
+                ActividadController::registrar(
+                    $user->id,
+                    'comentario',
+                    'evento',
+                    $validated['noticia_id'],
+                    'Comentaste un evento',
+                    ['comentario' => $validated['contenido']]
+                );
+            }
+        }
         return response()->json([
             'success' => true,
             'comentario' => $comentario,

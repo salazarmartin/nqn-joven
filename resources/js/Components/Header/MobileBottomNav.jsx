@@ -83,7 +83,7 @@ function QRModal({ isOpen, onClose }) {
 
                 {/* Contenedor de búsqueda - permite que el dropdown se expanda */}
                 <div className="bg-white dark:bg-gray-800 flex-1 overflow-visible">
-                    <div className="pt-12 pb-12">
+                    <div className="pt-2 pb-2">
                         <VerQR
                             className="max-w-xl"
                             
@@ -139,8 +139,16 @@ export default function MobileBottomNav({ onToggleSidebar }) {
 
     return (
         <>
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 safe-area-bottom" style={{background:"#5d4dff"}}>
-                <div className="flex items-center justify-around h-16 px-2 relative">
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 safe-area-bottom overflow-hidden" style={{background:"#5d4dff"}}>
+                {/* Decoraciones NQN */}
+                <img src="/images/iconos/Recurso amancay degrade 3.png" alt="" aria-hidden="true"
+                    className="absolute -bottom-4 -left-4 w-16 h-16 object-contain opacity-20 pointer-events-none select-none" />
+                <img src="/images/iconos/sol verde.png" alt="" aria-hidden="true"
+                    className="absolute -top-3 right-1/3 w-12 h-12 object-contain opacity-15 pointer-events-none select-none" />
+                <img src="/images/iconos/Recurso araucaria degrade 1.png" alt="" aria-hidden="true"
+                    className="absolute -bottom-4 -right-4 w-16 h-16 object-contain opacity-20 pointer-events-none select-none rotate-180" />
+
+                <div className="flex items-center justify-around h-16 px-2 relative z-10">
                     {/* Home */}
                     <Link
                         href={navItems[0].href}

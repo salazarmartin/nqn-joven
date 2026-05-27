@@ -9,11 +9,11 @@ import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
 import MobileBottomNav from "@/Components/Header/MobileBottomNav";
 
-export default function AuthenticatedLayout({ 
-    header, 
-    children, 
-    
-    maxWidth = "max-w-4xl" // opciones: "max-w-3xl", "max-w-4xl", "max-w-5xl", "max-w-6xl", "max-w-7xl", "w-full"
+export default function AuthenticatedLayout({
+    header,
+    children,
+    noDecorations = false,
+    maxWidth = "max-w-4xl"
 }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -30,6 +30,9 @@ export default function AuthenticatedLayout({
         if (!user) return;
 
         window.authUserId = user.id;
+
+        if (!import.meta.env.VITE_PUSHER_APP_KEY) return;
+
         window.Pusher = Pusher;
 
         window.Echo = new Echo({
@@ -75,6 +78,27 @@ export default function AuthenticatedLayout({
 
     return (
         <div className="min-h-screen bg-white flex flex-col dark:bg-gray-900 transition-colors">
+
+            {/* Decoraciones NQN — solo en los costados, sin invadir el contenido central */}
+            {!noDecorations && (
+                <div className="fixed inset-0 pointer-events-none select-none overflow-hidden z-0" aria-hidden="true">
+                    {/* Costado izquierdo */}
+                    <img src="/images/iconos/Recurso araucaria degrade 3.png"
+                        className="absolute top-20 -left-16 w-56 h-56 object-contain opacity-25 rotate-12" />
+                    <img src="/images/iconos/Recurso amancay degrade 2.png"
+                        className="absolute top-1/2 -left-16 w-52 h-52 object-contain opacity-25 -rotate-6" />
+                    <img src="/images/iconos/Recurso huella degrade 2.png"
+                        className="absolute bottom-16 -left-14 w-48 h-48 object-contain opacity-20 rotate-6" />
+                    {/* Costado derecho */}
+                    <img src="/images/iconos/Recurso amancay degrade 4.png"
+                        className="absolute top-20 -right-16 w-56 h-56 object-contain opacity-25 -rotate-12" />
+                    <img src="/images/iconos/lanin verde.png"
+                        className="absolute top-1/2 -right-14 w-48 h-48 object-contain opacity-20 rotate-6" />
+                    <img src="/images/iconos/Recurso sol degrade 2.png"
+                        className="absolute bottom-16 -right-16 w-52 h-52 object-contain opacity-20 -rotate-6" />
+                </div>
+            )}
+
             <Header
                 onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
                 notificaciones={notificaciones}
