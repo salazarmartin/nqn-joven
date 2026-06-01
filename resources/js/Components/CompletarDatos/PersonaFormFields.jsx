@@ -4,7 +4,10 @@ import TextInput from "@/Components/TextInput";
 import InputError from "@/Components/InputError";
 
 export default function PersonaFormFields({
-    regiones,
+    handleCiudadChange,
+    handleProvinciaChange,
+    provincias,
+    ciudades,
     estudios,
     data,
     errors,
@@ -89,45 +92,33 @@ export default function PersonaFormFields({
 
             <div>
                 <InputLabel className="block font-medium mb-1 dark:text-gray-300">
-                    Ciudad *
+                    Provincia *
                 </InputLabel>
-                <TextInput
-                    type="text"
-                    value={data.ciudad}
-                    onChange={(e) => {
-                        onDataChange("ciudad", e.target.value);
-                        clearFieldError("ciudad");
-                    }}
-                    onBlur={(e) => onFieldValidation("ciudad", e.target.value)}
-                    className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 px-3 py-2 rounded-lg focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400"
+                <SelectInput
+                    options={provincias}
+                    value={data.provincia_id}
+                    onChange={handleProvinciaChange}
                 />
-                {(clientErrors.ciudad || errors.ciudad) && (
+                {(clientErrors.provincia_id || errors.provincia_id) && (
                     <InputError
-                        message={clientErrors.ciudad || errors.ciudad}
+                        message={clientErrors.provincia_id || errors.provincia_id}
                         className="mt-1"
                     />
                 )}
             </div>
-
+            
             <div>
                 <InputLabel className="block font-medium mb-1 dark:text-gray-300">
-                    Provincia *
+                    Ciudad *
                 </InputLabel>
-                <TextInput
-                    type="text"
-                    value={data.provincia}
-                    onChange={(e) => {
-                        onDataChange("provincia", e.target.value);
-                        clearFieldError("provincia");
-                    }}
-                    onBlur={(e) =>
-                        onFieldValidation("provincia", e.target.value)
-                    }
-                    className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 px-3 py-2 rounded-lg focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400"
+                <SelectInput
+                    options={ciudades}
+                    value={data.ciudad_id}
+                    onChange={handleCiudadChange}
                 />
-                {(clientErrors.provincia || errors.provincia) && (
+                {(clientErrors.ciudad_id || errors.ciudad_id) && (
                     <InputError
-                        message={clientErrors.provincia || errors.provincia}
+                        message={clientErrors.ciudad_id || errors.ciudad_id}
                         className="mt-1"
                     />
                 )}
@@ -137,12 +128,20 @@ export default function PersonaFormFields({
                 <InputLabel className="block font-medium mb-1 dark:text-gray-300">
                     Región *
                 </InputLabel>
-                <SelectInput
-                    options={regiones}
-                    value={data.region_id}
-                    onChange={(e) => onDataChange("region_id", e.target.value)}
-                    onBlur={(e) => onFieldValidation("region_id", e.target.value)}
-                />
+                <TextInput
+                                            id="region_nombre"
+                                            type="text"
+                                            className="mt-1 block w-full"
+                                            value=""
+                                            disabled
+                                        />
+                                        
+                                        <input
+                                            id="region_id"
+                                            name="region_id"
+                                            type="hidden"
+                                            value="">
+                                        </input>
                 
                 {(clientErrors.region_id || errors.region_id) && (
                     <InputError

@@ -1,5 +1,6 @@
 import { Head, Link } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { useState, useEffect } from "react";
 
 import InputError from "@/Components/InputError";
 import InputLabel from "@/Components/InputLabel";
@@ -17,8 +18,11 @@ export default function EditarPerfilPersona({ className = "", onCancel }) {
     const { props } = usePage();
     const auth = props.auth;
     const user = props.auth.user;
+
+    const provincias = props.provincias;
+
+    const [ciudades, setCiudades] = useState([]);
     
-    const regiones = props.regiones;
     const estudios = props.estudios;
     const persona = props.persona || {};
 
@@ -28,12 +32,76 @@ export default function EditarPerfilPersona({ className = "", onCancel }) {
             apellido: persona.apellido || "",
             ciudad: user.ciudad || "",
             provincia: user.provincia || "",
+            ciudad_id: user.ciudad_id || "",
+            provincia_id: user.provincia_id || "",
             telefono: user.telefono || "",
             trabaja_emprende: persona.trabaja_emprende || "",
             estudio_id: persona.estudio_id || "",
             region_id: persona.region_id || "",
             biografia: persona.biografia || "",
         });
+
+    if(user.ciudad_id != ""){
+         useEffect(() => {
+            const fetchRegion = async () => {
+            try {
+                const url = `/profile/buscarregion/${user.ciudad_id}`;
+                const response = await fetch(url, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector(
+                    'meta[name="csrf-token"]'
+                    ).content,
+                },
+                });
+
+                const data = await response.json();
+                
+                if(data.region_id)
+                    setData("region_id", data.region_id);
+                else
+                    setData("region_id", null);
+
+                if(data.region_nombre)
+                    document.getElementById('region_nombre').value = data.region_nombre;
+                else
+                    document.getElementById('region_nombre').value = "";
+                
+            } catch (error) {
+                console.error("Error al procesar la solicitud", error);
+            }
+            };
+            fetchRegion();
+        }, []); // solo una vez al montar
+    }
+
+    if(user.provincia_id != ""){
+         useEffect(() => {
+            const fetchCiudad = async () => {
+            try {
+                const url = `/profile/buscarciudades/${user.provincia_id}`;
+                const response = await fetch(url, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector(
+                    'meta[name="csrf-token"]'
+                    ).content,
+                },
+                });
+
+                const data = await response.json();
+                
+                setCiudades(data.ciudades);
+                
+            } catch (error) {
+                console.error("Error al procesar la solicitud", error);
+            }
+            };
+            fetchCiudad();
+        }, []);// solo una vez al montar
+    }
 
     const submit = (e) => {
         e.preventDefault();
@@ -51,6 +119,80 @@ export default function EditarPerfilPersona({ className = "", onCancel }) {
             },
             onFinish: () => toast.dismiss(toastId),
         });
+    };
+
+    
+    const handleProvinciaChange = async (e) => {
+        const value = e.target.value;
+        setData("provincia_id", value);
+            
+            try {
+                
+                const url = `/profile/buscarciudades/`+value;
+                const response = await fetch(
+                    url,
+                    {
+                        method: "GET",
+                        headers: {
+                            
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": document.querySelector(
+                                'meta[name="csrf-token"]'
+                            ).content,
+                        },
+                    }
+                );
+                
+
+                const data = await response.json();
+                    
+                setCiudades(data.ciudades);
+                document.getElementById('region_nombre').value = "";
+                
+            } catch (error) {
+                console.error("Error al procesar la solicitud");
+            } finally {
+            }
+    };
+
+    const handleCiudadChange = async (e) => {
+        const value = e.target.value;
+        setData("ciudad_id", value);
+            
+            try {
+                
+                const url = `/profile/buscarregion/`+value;
+                const response = await fetch(
+                    url,
+                    {
+                        method: "GET",
+                        headers: {
+                            
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": document.querySelector(
+                                'meta[name="csrf-token"]'
+                            ).content,
+                        },
+                    }
+                );
+                
+
+                const data = await response.json();
+                    
+                if(data.region_id)
+                    setData("region_id", data.region_id);
+                else
+                    setData("region_id", null);
+
+                if(data.region_nombre)
+                    document.getElementById('region_nombre').value = data.region_nombre;
+                else
+                    document.getElementById('region_nombre').value = "";
+                
+            } catch (error) {
+                console.error("Error al procesar la solicitud");
+            } finally {
+            }
     };
 
     const handleDataChange = (field, value) => {
@@ -125,47 +267,51 @@ export default function EditarPerfilPersona({ className = "", onCancel }) {
 
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <InputLabel htmlFor="ciudad" value="Ciudad *" />
-                        <TextInput
-                            id="ciudad"
-                            type="text"
-                            className="mt-1 block w-full"
-                            value={data.ciudad}
-                            onChange={(e) => setData("ciudad", e.target.value)}
-                            required
-                        />
-                        <InputError message={errors.ciudad} className="mt-2" />
-                    </div>
 
                     <div>
                         <InputLabel htmlFor="provincia" value="Provincia *" />
-                        <TextInput
-                            id="provincia"
-                            type="text"
-                            className="mt-1 block w-full"
-                            value={data.provincia}
-                            onChange={(e) =>
-                                setData("provincia", e.target.value)
-                            }
-                            required
+                        <SelectInput
+                            options={provincias}
+                            value={data.provincia_id}
+                            onChange={handleProvinciaChange}
                         />
                         <InputError
-                            message={errors.provincia}
+                            message={errors.provincia_id}
                             className="mt-2"
                         />
                     </div>
+
+                    <div>
+                        <InputLabel htmlFor="ciudad" value="Ciudad *" />
+                        <SelectInput
+                            options={ciudades}
+                            value={data.ciudad_id}
+                            onChange={handleCiudadChange}
+                        />
+                        <InputError message={errors.ciudad_id} className="mt-2" />
+                    </div>
+
+                    
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     
                     <div>
-                        <InputLabel htmlFor="region_id" value="Regiones *" />
-                        <SelectInput
-                            options={regiones}
-                            value={data.region_id}
-                            onChange={(e) => setData("region_id", e.target.value)}
+                        <InputLabel htmlFor="region_nombre" value="Región *" />
+                        <TextInput
+                            id="region_nombre"
+                            type="text"
+                            className="mt-1 block w-full"
+                            value={data.region_nombre}
+                            disabled
                         />
+                        
+                        <input
+                            id="region_id"
+                            name="region_id"
+                            type="hidden"
+                            value="">
+                        </input>
                         <InputError message={errors.region_id} className="mt-2" />
                     </div>
 

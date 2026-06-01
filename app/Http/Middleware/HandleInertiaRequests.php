@@ -10,6 +10,8 @@ use App\Models\ComentNoticia;
 use Illuminate\Notifications\DatabaseNotification;
 use App\Models\Region;
 use App\Models\Estudio;
+use App\Models\Ciudad;
+use App\Models\Provincia;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -91,6 +93,9 @@ class HandleInertiaRequests extends Middleware
 
         $regiones = Region::orderBy('nombre','asc')->get();
         $estudios = Estudio::orderBy('nombre','asc')->get();
+        $ciudades = Ciudad::orderBy('nombre','asc')->get();
+        $provincias = Provincia::orderBy('nombre','asc')->get();
+        
 
         return [
             ...parent::share($request),
@@ -104,7 +109,9 @@ class HandleInertiaRequests extends Middleware
             'notificacionesIniciales' => $notificacionesIniciales,
             'notificacionesNoLeidasCount' => $notificacionesNoLeidasCount,
             'estudios' => $estudios,
-            'regiones' => $regiones
+            'regiones' => $regiones,
+            'ciudades' => $ciudades,
+            'provincias' => $provincias
         ];
     }
 

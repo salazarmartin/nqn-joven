@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Like;
 use App\Models\Noticia;
 use App\Models\Region;
+use App\Models\Ciudad;
+use App\Models\Provincia;
 use App\Models\Estudio;
 
 class ProfileController extends Controller
@@ -29,7 +31,7 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         $residencias = [];
-Log::info($user);
+
         // Si es institución, cargar sus residencias
         if ($user->tipo_usuario === 'institucion') {
             $institucion = PerfInstitucion::where('user_id', $user->id)->first();
@@ -52,6 +54,8 @@ Log::info($user);
         }
 
         $regiones = Region::orderBy('nombre','asc')->get();
+        $ciudades = Ciudad::orderBy('nombre','asc')->get();
+        $provincias = Provincia::orderBy('nombre','asc')->get();
         $estudios = Estudio::orderBy('nombre','asc')->get();
         
         return Inertia::render('Profile/Edit', [
@@ -64,6 +68,8 @@ Log::info($user);
             'estudio' => $persona?->estudio,
             'residencias' => $residencias,
             'regiones' => $regiones,
+            'ciudades' => $ciudades,
+            'provincias' => $provincias,
             'estudios' => $estudios,
             'persona' => $persona,
             'institucion' => $institucion,
@@ -94,6 +100,8 @@ Log::info($user);
         $interests = $persona->interests;
         $regiones = Region::orderBy('nombre','asc')->get();
         $estudios = Estudio::orderBy('nombre','asc')->get();
+        $ciudades = Ciudad::orderBy('nombre','asc')->get();
+        $provincias = Provincia::orderBy('nombre','asc')->get();
         
         return Inertia::render('Profile/Partials/EditarPerfilPersona', [
             'auth' => [
@@ -101,9 +109,26 @@ Log::info($user);
             ],
             'currentInterests' => $interests,
             'regiones' => $regiones,
+            'ciudades' => $ciudades,
+            'provincias' => $provincias,
             'estudios' => $estudios,
             'persona' => $persona,
         ]);
+    }
+
+    public function buscarciudades($provincia_id){
+        
+        Log::info("entre");
+        $ciudades = Ciudad::where('provincia_id','=',$provincia_id)->orderBy('nombre')->get();
+        
+        return response()->json(['ciudades' => $ciudades]);
+    }
+
+    public function buscarregion($ciudad_id){
+        
+        $ciudad = Ciudad::where('id','=',$ciudad_id)->with('region')->get();
+        
+        return response()->json(['region_nombre' => $ciudad[0]?->region?->nombre, 'region_id' => $ciudad[0]?->region_id]);
     }
 
     public function cambiarcontrasena(Request $request)
@@ -228,7 +253,7 @@ Log::info($user);
     {
         $user = Auth::user();
         $tipoUsuario = $user->tipo_usuario;
-
+Log::info("ed");
         $rules = [
             'profile_photo_path' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
             'nombre' => [
@@ -259,18 +284,18 @@ Log::info($user);
             ];
             $rules['fecha_nac'] = 'required|date|before:today|after:' . now()->subYears(120)->format('Y-m-d');
             $rules['biografia'] = 'nullable|string|max:500';
-            $rules['ciudad'] = 'required|string|min:2|max:100';
+            $rules['ciudad_id'] = 'required';
             $rules['region_id'] = 'required';
             $rules['estudio_id'] = 'required';
             $rules['dni'] = 'required';
             $rules['trabaja_emprende'] = 'required';
             $rules['username'] = 'required|unique:' . PerfPersona::class;
-            $rules['provincia'] = 'required|string|min:2|max:100';
+            $rules['provincia_id'] = 'required';
         } else {
             $rules['tipo_institucion'] = 'required|string|min:3|max:100';
             $rules['tipo_institucion_otro'] = 'required_if:tipo_institucion,Otro|string|min:3|max:100';
-            $rules['ciudad'] = 'required|string|min:2|max:100';
-            $rules['provincia'] = 'required|string|min:2|max:100';
+            $rules['ciudad_id'] = 'required';
+            $rules['provincia_id'] = 'required';
             $rules['direccion'] = 'required|string|min:5|max:255';
             $rules['latitud'] = 'required|numeric|between:-90,90';
             $rules['longitud'] = 'required|numeric|between:-180,180';
@@ -295,8 +320,8 @@ Log::info($user);
             'telefono.required' => 'El teléfono es obligatorio',
             'telefono.min' => 'El teléfono debe tener al menos 8 dígitos',
             'telefono.regex' => 'El teléfono solo puede contener números, espacios y guiones',
-            'ciudad.required' => 'La ciudad es obligatoria',
-            'provincia.required' => 'La provincia es obligatoria',
+            'ciudad_id.required' => 'La ciudad es obligatoria',
+            'provincia_id.required' => 'La provincia es obligatoria',
             'region_id.required' => 'La región es obligatoria',
             'estudio_id.required' => 'Los estudios son obligatorios',
             'dni.required' => 'El dni es obligatorio',
@@ -354,8 +379,8 @@ Log::info($user);
         $userData = [
             'nombre' => $validated['nombre'],
             'telefono' => $validated['telefono'],
-            'ciudad' => $validated['ciudad'],
-            'provincia' => $validated['provincia'],
+            'ciudad_id' => $validated['ciudad_id'],
+            'provincia_id' => $validated['provincia_id'],
         ];
 
        // Log::info('Actualizando datos básicos del usuario', ['user_id' => $user->id, 'data' => $userData]);
@@ -556,19 +581,13 @@ Log::info($user);
                 'max:255',
                 'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/'
             ],
-            'ciudad' => [
+            'ciudad_id' => [
                 'required',
-                'string',
-                'min:2',
-                'max:255',
-                'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$/'
+                
             ],
-            'provincia' => [
+            'provincia_id' => [
                 'required',
-                'string',
-                'min:2',
-                'max:255',
-                'regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$/'
+                
             ],
             'telefono' => [
                 'required'
@@ -587,8 +606,8 @@ Log::info($user);
         ], [
             'apellido.required' => 'El apellido es obligatorio.',
             
-            'ciudad.required' => 'La ciudad es obligatoria.',
-            'provincia.required' => 'La provincia es obligatoria.',
+            'ciudad_id.required' => 'La ciudad es obligatoria.',
+            'provincia_id.required' => 'La provincia es obligatoria.',
             'trabaja_emprende.required' => 'Trabaja/Emprende es obligatorio.',
             'apellido.min' => 'El apellido debe tener al menos 2 caracteres.',
             'apellido.regex' => 'El apellido solo puede contener letras.',
@@ -597,8 +616,8 @@ Log::info($user);
 
         $user->update([
             'nombre' => $validated['nombre'],
-            'ciudad' => $validated['ciudad'],
-            'provincia' => $validated['provincia'],
+            'ciudad_id' => $validated['ciudad_id'],
+            'provincia_id' => $validated['provincia_id'],
             'telefono' => $validated['telefono'],
         ]);
 

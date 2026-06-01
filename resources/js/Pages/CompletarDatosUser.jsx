@@ -18,6 +18,8 @@ export default function CompletarDatosUser() {
     const { props } = usePage();
     const { type } = props;
     const { regiones } = props;
+    const { provincias } = props;
+    
     const { estudios } = props;
 
     const { validateField } = useValidation();
@@ -36,8 +38,8 @@ export default function CompletarDatosUser() {
         telefono: "",
         region_id: type === "persona" ? "" : undefined,
         estudio_id: type === "persona" ? "" : undefined,
-        ciudad: type === "institucion" ? "Neuquén Capital" : "",
-        provincia: type === "institucion" ? "Neuquén" : "",
+        ciudad_id: "",
+        provincia_id: "",
         direccion: type === "institucion" ? "" : undefined,
         latitud: type === "institucion" ? null : undefined,
         longitud: type === "institucion" ? null : undefined,
@@ -51,13 +53,78 @@ export default function CompletarDatosUser() {
         tipo_documento: type === "institucion" ? "CUIT" : undefined,
     });
 
+    const [ciudades, setCiudades] = useState([]);
+
+    const handleProvinciaChange = async (e) => {
+        const value = e.target.value;
+        setData("provincia_id", value);
+            
+            try {
+                
+                const url = `/profile/buscarciudades/`+value;
+                const response = await fetch(
+                    url,
+                    {
+                        method: "GET",
+                        headers: {
+                            
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": document.querySelector(
+                                'meta[name="csrf-token"]'
+                            ).content,
+                        },
+                    }
+                );
+                
+
+                const data = await response.json();
+                    
+                setCiudades(data.ciudades);
+                
+            } catch (error) {
+                console.error("Error al procesar la solicitud");
+            }
+    };
+
+    const handleCiudadChange = async (e) => {
+        const value = e.target.value;
+        setData("ciudad_id", value);
+            
+            try {
+                
+                const url = `/profile/buscarregion/`+value;
+                const response = await fetch(
+                    url,
+                    {
+                        method: "GET",
+                        headers: {
+                            
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": document.querySelector(
+                                'meta[name="csrf-token"]'
+                            ).content,
+                        },
+                    }
+                );
+                
+
+                const data = await response.json();
+                    
+                setData("region_id", data.region_id);
+                document.getElementById('region_nombre').value = data.region_nombre;
+                
+            } catch (error) {
+                console.error("Error al procesar la solicitud");
+            } 
+    };
+
     const normalizarTexto = (texto) => {
         return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     };
 
     const dataNormalizada = {
         ...data,
-        ciudad: normalizarTexto(data.ciudad),
+        ciudad_id: normalizarTexto(data.ciudad_id),
     };
 
     // Timeout para redirigir después de 15 minutos
@@ -344,7 +411,10 @@ export default function CompletarDatosUser() {
                     ) : (
                         <PersonaFormFields
                             estudios={estudios}
-                            regiones={regiones}
+                            provincias={provincias}
+                            ciudades={ciudades}
+                            handleCiudadChange={handleCiudadChange}
+                            handleProvinciaChange={handleProvinciaChange}
                             data={data}
                             errors={errors}
                             clientErrors={clientErrors}

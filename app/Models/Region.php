@@ -35,5 +35,10 @@ class Region extends Model
     {
         return $this->hasOne(PerfInstitucion::class);
     }
+
+    public function ciudad()
+    {
+        return $this->hasOne(Ciudad::class);
+    }
 }
 

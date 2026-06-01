@@ -7,6 +7,8 @@ use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
 use App\Models\Region;
+use App\Models\Ciudad;
+use App\Models\Provincia;
 use App\Models\Estudio;
 
 class VerifyEmailController extends Controller
@@ -20,12 +22,15 @@ class VerifyEmailController extends Controller
 
         $regiones = Region::orderBy('nombre','asc')->get();
         $estudios = Estudio::orderBy('nombre','asc')->get();
+        $ciudades = Ciudad::orderBy('nombre','asc')->get();
+        $provincias = Provincia::orderBy('nombre','asc')->get();
+        
 
         // Si ya verificó el email
         if ($user->hasVerifiedEmail()) {
             // Redirigir según el estado actual
             if ($user->estado === 'pendiente_datos') {
-                return redirect()->route('completar.datos', ['type' => $user->tipo_usuario, 'regiones' => $regiones, 'estudios'=>$estudios]);
+                return redirect()->route('completar.datos', ['type' => $user->tipo_usuario, 'regiones' => $regiones, 'ciudades' => $ciudades, 'provincias' => $provincias, 'estudios'=>$estudios]);
             }
 
             if ($user->estado === 'pendiente_aprobacion') {
@@ -45,7 +50,7 @@ class VerifyEmailController extends Controller
         }
 
         // Redirigir a completar datos
-        return redirect()->route('completar.datos', ['type' => $user->tipo_usuario, 'regiones' => $regiones])
+        return redirect()->route('completar.datos', ['type' => $user->tipo_usuario, 'regiones' => $regiones, 'ciudades' => $ciudades, 'provincias' => $provincias, 'estudios'=>$estudios])
             ->with('success', '¡Email verificado! Ahora completá tus datos.');
     }
 }

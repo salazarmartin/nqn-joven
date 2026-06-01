@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use App\Models\Region;
+use App\Models\Ciudad;
+use App\Models\Provincia;
 use App\Models\Estudio;
 
 class EmailVerificationPromptController extends Controller
@@ -22,10 +24,13 @@ class EmailVerificationPromptController extends Controller
 
             $regiones = Region::orderBy('nombre','asc')->get();
             $estudios = Estudio::orderBy('nombre','asc')->get();
+            $ciudades = Ciudad::orderBy('nombre','asc')->get();
+            $provincias = Provincia::orderBy('nombre','asc')->get();
+        
             
             // Si está en pendiente_datos, redirigir a completar datos
             if ($request->user()->estado === 'pendiente_datos') {
-                return redirect()->route('completar.datos', ['type' => $request->user()->tipo_usuario, 'regiones' => $regiones, 'estudios'=>$estudios]);
+                return redirect()->route('completar.datos', ['type' => $request->user()->tipo_usuario, 'regiones' => $regiones, 'ciudades' => $ciudades, 'provincias' => $provincias, 'estudios'=>$estudios]);
             }
             
             // Si está en pendiente_aprobacion (institución), redirigir a vista de espera

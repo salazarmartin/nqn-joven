@@ -242,6 +242,8 @@ Route::put('/profile/interests', [ProfileController::class, 'updateInterests'])
     ->middleware('auth')
     ->name('profile.interests.update');
 
+Route::get('profile/buscarciudades/{provincia_id}', [ProfileController::class, 'buscarciudades']);
+Route::get('profile/buscarregion/{ciudad_id}', [ProfileController::class, 'buscarregion']);
 
 Route::post('/chats/{chat}/marcar-leidos', [ChatController::class, 'marcarLeidos'])
 ->middleware('auth');
